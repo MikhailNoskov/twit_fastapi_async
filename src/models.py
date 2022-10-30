@@ -21,6 +21,14 @@ class Message(Base):
     created_at = Column(...)
 
 
+class MessageImage(Base):
+    __tablename__ = "messageimages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    message = Column(forein_key=User)
+    img = (...)
+
+
 class Reaction(Base):
     __tablename__ = "reactions"
 
