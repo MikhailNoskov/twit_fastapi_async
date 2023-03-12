@@ -10,7 +10,6 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(50), nullable=False)
     password = Column(String(50), nullable=False)
-    comment = Column(String(50), nullable=True)
 
     def __repr__(self):
         return f"{self.username}"
