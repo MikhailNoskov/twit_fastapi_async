@@ -18,19 +18,25 @@ class User(Base):
     name = Column(String(50), nullable=False)
     password = Column(String(50), nullable=False)
     api_key = Column(String(50), nullable=True)
-    tweets = relationship('DbUser', back_populates='author')
+    tweets = relationship('Tweet', back_populates='author')
 
     followers = relationship('User',
+                             viewonly=True,
                              secondary=users_connections,
                              primaryjoin=id == users_connections.c.follower_id,
                              secondaryjoin=id == users_connections.c.followed_id,
-                             backref='following')
+                             backref='following_of')
 
     following = relationship('User',
                              secondary=users_connections,
                              primaryjoin=id == users_connections.c.followed_id,
                              secondaryjoin=id == users_connections.c.follower_id,
-                             backref='followers')
+                             backref='followers_of')
 
     def __repr__(self):
         return f"{self.name}"
+
+    # def to_dict(self):
+    #     columns = self.__table__.columns.keys()
+    #     user_dict = {column: getattr(self, column) for column in columns}
+    #     return user_dict

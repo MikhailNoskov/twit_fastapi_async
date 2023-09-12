@@ -1,8 +1,13 @@
-from fastapi import APIRouter, HTTPException, status
-from models.users import User
-from schema.users import UserRegister
-from database.connection import get_session
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, status, Depends, Header
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+
+from models.users import User
+from schema.users import UserRegister, UserFull, UserFollowing, UserFollower
+from database.connection import get_session
+from sqlalchemy.orm import joinedload
 
 user_router = APIRouter(
     tags=["users"]
@@ -10,36 +15,70 @@ user_router = APIRouter(
 
 
 @user_router.post("/signup")
-async def sign_new_user(data: UserRegister) -> dict:
-    print(data)
-    async with get_session() as session:
-        async with session.begin():
-            user = await session.execute(select(User).where(User.password == data.password))
-            user = user.scalar_one_or_none()
-            if user:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="User with supplied username exists"
-                )
-            user = User(username=data.username, password=data.password)
-            session.add(user)
-            await session.flush()
-            return {
-                "message": "User successfully registered!"
-            }
-
-@user_router.get("/{id}")
-async def retrieve_event(id: int):
-    async with async_session() as session:
-        async with session.begin():
-            user = await session.execute(select(User).where(User.id == id))
-            user = user.scalar_one_or_none()
-            if user:
-                return {'yes': 'yes'}
+async def sign_new_user(data: UserRegister, db: AsyncSession = Depends(get_session)) -> dict:
+    async with db.begin():
+        user = await db.execute(select(User).where(User.password == data.password))
+        user = user.scalar_one_or_none()
+        if user:
             raise HTTPException(
-                status_code=status. HTTP_404_NOT_FOUND,
-                detail="Event with supplied ID does not exist"
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with supplied username exists"
             )
+        user = User(name=data.username, password=data.password)
+        db.add(user)
+        await db.flush()
+        await db.refresh(user)
+        return {
+            "message": "User successfully registered!"
+        }
+
+
+@user_router.get('/me', response_model=UserRegister)
+async def me(api_key: Optional[str] = Header(None), db: AsyncSession = Depends(get_session)):
+    user = await db.execute(select(User).where(User.api_key == api_key))
+    user = user.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return user
+
+
+@user_router.get('/{user_id}', response_model=UserFull)
+async def get_user_by_id(user_id: int, api_key: Optional[str] = Header(None), db: AsyncSession = Depends(get_session)):
+    user = await db.execute(select(User).where(User.id == user_id).options(
+     joinedload(User.followers),
+     joinedload(User.following)))
+    user = user.scalar()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return user
+
+
+@user_router.post('/{user_id}/follow')
+async def follow_user(user_id: int, api_key: Optional[str] = Header(None), db: AsyncSession = Depends(get_session)):
+    sync_session = db.sync_session
+    with sync_session.begin():
+        me = sync_session.query(User).filter_by(api_key=api_key).first()
+        user = sync_session.query(User).filter_by(id=user_id).first()
+        if not me:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        me.following.append(user)
+    await db.commit()
+    return user
+
 
 # @user_router.post("/signin")
 # async def sign_user_in(user: UserSignIn) -> dict:
@@ -67,27 +106,6 @@ async def retrieve_event(id: int):
 #     return {
 #         "message": "User successfully registered!"
 #     }
-#
-#
-# @user_router.post("/signin")
-# async def sign_user_in(user: UserSignIn) -> dict:
-#     if user.email not in users:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="User does not exist")
-#     if users[user.email].password != user.password:
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Wrong credentials passed"
-#         )
-#     return {
-#         "message": "User signed in successfully"
-#     }
-#
-#
-# # @app.get('/api/users/me')
-# # async def me(request: Request, db: Session = Depends(get_db)):
-# #     pass
 # #
 # #
 # # @app.get('/api/users/{user_id}')

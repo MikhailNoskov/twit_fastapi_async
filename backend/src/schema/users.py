@@ -5,7 +5,8 @@ class UserRegister(BaseModel):
     username: str
     password: str
 
-    class Config :
+    class Config:
+        orm_mode = True
         schema_extra = {
             "example": {
                 "username": "fastapi@packt.com",
@@ -13,6 +14,31 @@ class UserRegister(BaseModel):
             }
         }
 
+
+class UserFollower(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class UserFollowing(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class UserFull(BaseModel):
+    name: str
+    password: str
+    followers: List[UserFollower] = None
+    following: List[UserFollowing] = None
+
+    class Config:
+        orm_mode = True
 
 # class NewUser(User):
 #     pass
