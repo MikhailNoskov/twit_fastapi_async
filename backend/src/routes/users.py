@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from models.users import User
 from schema.users import UserRegister
-from db import async_session
+from database.connection import get_session
 from sqlalchemy import select
 
 user_router = APIRouter(
@@ -12,7 +12,7 @@ user_router = APIRouter(
 @user_router.post("/signup")
 async def sign_new_user(data: UserRegister) -> dict:
     print(data)
-    async with async_session() as session:
+    async with get_session() as session:
         async with session.begin():
             user = await session.execute(select(User).where(User.password == data.password))
             user = user.scalar_one_or_none()

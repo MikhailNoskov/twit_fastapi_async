@@ -1,14 +1,17 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from db import Base
-from sqlalchemy import Column, Integer, String
+from database.connection import Base
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 
 
 class Tweet(Base):
     __tablename__ = 'tweets'
 
     id = Column(Integer, primary_key=True)
-    text = Column(String(500), nullable=False)
+    content = Column(String(500), nullable=False)
+    author_id = Column(Integer, ForeignKey('users.id'))
+    author = relationship('User', back_populates='tweets')
 
     def __repr__(self):
         return f"{self.text}"

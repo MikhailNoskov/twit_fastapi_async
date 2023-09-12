@@ -1,10 +1,6 @@
 from fastapi import FastAPI
-from db import engine, async_session, Base
 from routes.users import user_router
-from models.users import User
-from models.tweets import Tweet
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 
 app = FastAPI()
 
