@@ -14,4 +14,4 @@ class Tweet(Base):
     author = relationship('User', back_populates='tweets')
 
     def __repr__(self):
-        return f"{self.text}"
+        return f"{self.content}"
