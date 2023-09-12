@@ -1,5 +1,22 @@
-# @app.get('/api/tweets/{api_key}')
-# async def send_tweet(api_key: str):
+from fastapi import APIRouter, HTTPException, status
+from models.tweets import Tweet
+from schema.users import UserRegister
+from database.connection import get_session
+from sqlalchemy import select
+
+tweet_router = APIRouter(
+    tags=["tweets"]
+)
+
+
+@tweet_router.post('/')
+async def post_new_tweet():
+    pass
+
+
+@tweet_router.get('/')
+async def get_all_tweets():
+    pass
 #     print(api_key)
 #     # print(request.__dict__)
 #     # print(request.__dict__['scope']['_query_params'])
@@ -28,9 +45,11 @@
 #     return False
 
 
-# @app.delete('/api/tweets/{tweet_id}')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
+@tweet_router.delete('/{tweet_id}')
+async def delete_tweet(
+        # request: Request, db: Session = Depends(get_db)
+):
+    pass
 #
 #
 # @app.post('/api/medias')
@@ -38,9 +57,21 @@
 #     pass
 #
 #
-# @app.post('/api/tweets/{tweet_id}/likes')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
+
+
+@tweet_router.post('/{tweet_id}/likes')
+async def like_tweet(
+        # request: Request, db: Session = Depends(get_db)
+                     ):
+    pass
+
+
+@tweet_router.delete('/{tweet_id}/likes')
+async def unlike_tweet(
+        # request: Request, db: Session = Depends(get_db)
+                     ):
+    pass
+
 #
 #
 # @app.delete('/api/tweets/{tweet_id}/likes')

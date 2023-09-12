@@ -1,12 +1,19 @@
 from fastapi import FastAPI
+from fastapi.requests import Request
+from fastapi.datastructures import Headers
 from routes.users import user_router
+from routes.tweets import tweet_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-app.include_router(user_router, prefix="/user")
+app.include_router(user_router, prefix='/api/users')
+app.include_router(tweet_router, prefix='/api/tweets')
 
 
+@app.get('/')
+def index():
+    return {"message": "Hello"}
 # @app.on_event("startup")
 # async def startup_event():
 #     async with engine.begin() as conn:
@@ -32,7 +39,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # if __name__ == "__main__":
 #     uvicorn.run("main:app", host="127.0.0.1", port=7202, reload=True)

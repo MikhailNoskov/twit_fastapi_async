@@ -5,7 +5,7 @@ from database.connection import get_session
 from sqlalchemy import select
 
 user_router = APIRouter(
-    tags=["User"]
+    tags=["users"]
 )
 
 
