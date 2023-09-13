@@ -34,14 +34,6 @@ async def verify_api_key(api_key: Optional[str] = Header(), db: AsyncSession = D
 @media_router.post('/', dependencies=[Depends(verify_api_key)])
 async def post_new_media_file(image: UploadFile = File(...), db: AsyncSession = Depends(get_session)):
     async with db.begin():
-        # #TODO write get user method for all the endpoint
-        # user = await db.execute(select(User).where(User.api_key == api_key))
-        # user = user.scalar_one_or_none()
-        # if not user:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_404_NOT_FOUND,
-        #         detail="User not found"
-        #     )
         letters = string.ascii_letters
         random_str = ''.join(random.choice(letters) for i in range(6))
         new = f'_{random_str}.'
