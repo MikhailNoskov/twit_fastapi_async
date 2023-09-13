@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
+
 class UserRegister(BaseModel):
     username: str
     password: str
@@ -9,7 +10,7 @@ class UserRegister(BaseModel):
         orm_mode = True
         schema_extra = {
             "example": {
-                "username": "fastapi@packt.com",
+                "username": "mike@klike.com",
                 "password": "strong!!!",
             }
         }
@@ -32,6 +33,7 @@ class UserFollowing(BaseModel):
 
 
 class UserFull(BaseModel):
+    result: bool = True
     name: str
     password: str
     followers: List[UserFollower] = None

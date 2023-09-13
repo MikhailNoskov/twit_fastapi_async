@@ -1,8 +1,16 @@
-from fastapi import APIRouter, HTTPException, status
-from models.tweets import Tweet
-from schema.users import UserRegister
+from typing import Optional, List
+
+from fastapi import APIRouter, HTTPException, status, Header, Depends
+from models.tweets import Tweet, Like
+from schema.tweets import TweetDisplay, TweetsList
 from database.connection import get_session
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload, selectinload, subqueryload, aliased
+from fastapi.responses import JSONResponse
+from models.users import User
+from schema.users import UserFollower
+
 
 tweet_router = APIRouter(
     tags=["tweets"]
@@ -14,35 +22,34 @@ async def post_new_tweet():
     pass
 
 
-@tweet_router.get('/')
-async def get_all_tweets():
-    pass
-#     print(api_key)
-#     # print(request.__dict__)
-#     # print(request.__dict__['scope']['_query_params'])
-#     if api_key == 'test':
-#         return {
-#             "result": "true",
-#             "tweets": [
-#                 {
-#                     "id": 1,
-#                     "content": "Hello Hi!",
-#                     "attachments": [],
-#                     "author":
-#                         {
-#                             "id": 1,
-#                             "name": "Mike"
-#                         },
-#                     "likes": [
-#                         {
-#                             "user_id": 2,
-#                             "name": "Alla"
-#                         }
-#                     ]
-#                 }
-#             ]
-#         }
-#     return False
+@tweet_router.get('/', response_model=TweetsList)
+
+# @tweet_router.get('/', response_model=List[TweetDisplay])
+async def get_all_tweets(api_key: Optional[str] = Header(None), db: AsyncSession = Depends(get_session)):
+    async with db.begin():
+        # tweets = await db.execute(select(Tweet).options(selectinload(Tweet.author), subqueryload(Tweet.liked)))
+        tweets = await db.execute(select(Tweet).options(
+            selectinload(Tweet.author),  # Eagerly load Author
+            subqueryload(Tweet.likes).options(subqueryload(Like.user))  # Eagerly load Likes
+        ))
+        tweets = tweets.scalars().all()
+        tweets_response = []
+        for tweet in tweets:
+            tweet_display = TweetDisplay(
+                id=tweet.id,
+                content=tweet.content,
+                author=UserFollower(
+                    id=tweet.author.id,
+                    name=tweet.author.name
+                ),
+                likes=[]
+            )
+            for like in tweet.likes:
+                tweet_display.likes.append(
+                    UserFollower(id=like.user.id, name=like.user.name)
+                )
+            tweets_response.append(tweet_display)
+        return TweetsList(result=True, tweets=tweets_response)
 
 
 @tweet_router.delete('/{tweet_id}')
