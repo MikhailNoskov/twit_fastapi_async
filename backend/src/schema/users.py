@@ -3,7 +3,7 @@ from typing import Optional, List
 
 
 class UserRegister(BaseModel):
-    username: str
+    name: str
     password: str
 
     class Config:

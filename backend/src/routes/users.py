@@ -1,13 +1,15 @@
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, status, Depends, Header
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, insert
 
-from models.users import User
+from models.users import User, users_connections
 from schema.users import UserRegister, UserFull, UserFollowing, UserFollower
 from database.connection import get_session
 from sqlalchemy.orm import joinedload
+
 
 user_router = APIRouter(
     tags=["users"]
@@ -17,7 +19,7 @@ user_router = APIRouter(
 @user_router.post("/signup")
 async def sign_new_user(data: UserRegister, db: AsyncSession = Depends(get_session)) -> dict:
     async with db.begin():
-        user = await db.execute(select(User).where(User.password == data.password))
+        user = await db.execute(select(User).where(User.name == data.username))
         user = user.scalar_one_or_none()
         if user:
             raise HTTPException(
@@ -35,36 +37,39 @@ async def sign_new_user(data: UserRegister, db: AsyncSession = Depends(get_sessi
 
 @user_router.get('/me', response_model=UserRegister)
 async def me(api_key: Optional[str] = Header(None), db: AsyncSession = Depends(get_session)):
-    user = await db.execute(select(User).where(User.api_key == api_key))
-    user = user.scalar_one_or_none()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    return user
+    async with db.begin():
+        user = await db.execute(select(User).where(User.api_key == api_key))
+        user = user.scalar_one_or_none()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return user
 
 
 @user_router.get('/{user_id}', response_model=UserFull)
 async def get_user_by_id(user_id: int, api_key: Optional[str] = Header(None), db: AsyncSession = Depends(get_session)):
-    user = await db.execute(select(User).where(User.id == user_id).options(
-     joinedload(User.followers),
-     joinedload(User.following)))
-    user = user.scalar()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    return user
+    async with db.begin():
+        user = await db.execute(select(User).where(User.id == user_id).options(
+         joinedload(User.followers),
+         joinedload(User.following)))
+        user = user.scalar()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return user
 
 
 @user_router.post('/{user_id}/follow')
 async def follow_user(user_id: int, api_key: Optional[str] = Header(None), db: AsyncSession = Depends(get_session)):
-    sync_session = db.sync_session
-    with sync_session.begin():
-        me = sync_session.query(User).filter_by(api_key=api_key).first()
-        user = sync_session.query(User).filter_by(id=user_id).first()
+    async with db.begin():
+        me = await db.execute(select(User).where(User.api_key == api_key))
+        me = me.scalar_one_or_none()
+        user = await db.execute(select(User).where(User.id == user_id))
+        user = user.scalar_one_or_none()
         if not me:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -75,10 +80,24 @@ async def follow_user(user_id: int, api_key: Optional[str] = Header(None), db: A
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        me.following.append(user)
-    await db.commit()
-    return user
-
+        if me.id == user.id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="You can not follow yourself"
+            )
+        try:
+            stmt = insert(users_connections).values(
+                follower_id=me.id,
+                followed_id=user.id
+            )
+            await db.execute(stmt)
+            await db.commit()
+            return user
+        except IntegrityError:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="You are already following this user"
+            )
 
 # @user_router.post("/signin")
 # async def sign_user_in(user: UserSignIn) -> dict:
@@ -94,20 +113,3 @@ async def follow_user(user_id: int, api_key: Optional[str] = Header(None), db: A
 #     return {
 #         "message": "User signed in successfully"
 #     }
-#
-# @user_router.post("/signup")
-# async def sign_new_user(data: User) -> dict:
-#     if data.email in users:
-#         raise HTTPException(
-#             status_code=status.HTTP_409_CONFLICT,
-#             detail="User with supplied username exists"
-#         )
-#     users[data.email] = data
-#     return {
-#         "message": "User successfully registered!"
-#     }
-# #
-# #
-# # @app.get('/api/users/{user_id}')
-# # async def user(request: Request, db: Session = Depends(get_db)):
-# #     pass
