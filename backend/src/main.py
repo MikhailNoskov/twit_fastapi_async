@@ -3,12 +3,14 @@ from fastapi.requests import Request
 from fastapi.datastructures import Headers
 from routes.users import user_router
 from routes.tweets import tweet_router
+from routes.media import media_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 app.include_router(user_router, prefix='/api/users')
 app.include_router(tweet_router, prefix='/api/tweets')
+app.include_router(media_router, prefix='/api/medias')
 
 
 @app.get('/')
