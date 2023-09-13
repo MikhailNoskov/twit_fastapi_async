@@ -20,7 +20,7 @@ users_connections = Table('users_connections', Base.metadata,
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), nullable=False)
     password = Column(String(50), nullable=False)
     api_key = Column(String(50), nullable=True)

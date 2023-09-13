@@ -25,3 +25,16 @@ class TweetsList(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class TweetCreate(BaseModel):
+    text: str
+    attachments: Optional[List[int]]
+
+
+class TweetResponse(BaseModel):
+    result: bool = True
+    tweet_id: int
+
+    class Config:
+        orm_mode = True
