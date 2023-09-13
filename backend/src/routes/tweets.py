@@ -106,45 +106,54 @@ async def delete_tweet(
         return {"result": True}
 
 
-#
-#
-# @app.post('/api/medias')
-# async def post_image(request: Request, db: Session = Depends(get_db)):
-#     pass
-#
-#
-
-
 @tweet_router.post('/{tweet_id}/likes')
 async def like_tweet(
-        # request: Request, db: Session = Depends(get_db)
-                     ):
-    pass
+        tweet_id: int,
+        api_key: Optional[str] = Header(None),
+        db: AsyncSession = Depends(get_session)
+):
+    async with db.begin():
+        me = await db.execute(select(User).where(User.api_key == api_key))
+        me = me.scalar_one_or_none()
+        if not me:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        like = await db.execute(select(Like).where(Like.user_id == me.id, Like.tweet_id == tweet_id))
+        like = like.scalar_one_or_none()
+        if like:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You have already liked this tweet"
+            )
+        new_like = Like(user_id=me.id, tweet_id=tweet_id)
+        db.add(new_like)
+        await db.flush()
+        await db.refresh(new_like)
+        return {"result": True}
 
 
 @tweet_router.delete('/{tweet_id}/likes')
 async def unlike_tweet(
-        # request: Request, db: Session = Depends(get_db)
-                     ):
-    pass
-
-#
-#
-# @app.delete('/api/tweets/{tweet_id}/likes')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
-#
-#
-# @app.post('/api/users/{user_id}/follow')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
-#
-#
-# @app.delete('/api/users/{user_id}/follow')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
-# @app.get("/")
-# async def home(request: Request, db: Session = Depends(get_db)):
-#     todos = db.query(models.Smth).all()
-#     return templates.TemplateResponse("base.html",
-#                                       {"request": request, "todo_list": todos})
+        tweet_id: int,
+        api_key: Optional[str] = Header(None),
+        db: AsyncSession = Depends(get_session)
+):
+    async with db.begin():
+        me = await db.execute(select(User).where(User.api_key == api_key))
+        me = me.scalar_one_or_none()
+        if not me:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        like = await db.execute(select(Like).where(Like.user_id == me.id, Like.tweet_id == tweet_id))
+        like = like.scalar_one_or_none()
+        if not like:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You have not liked this tweet"
+            )
+        await db.delete(like)
+        return {"result": True}
