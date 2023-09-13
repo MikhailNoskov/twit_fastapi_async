@@ -70,9 +70,39 @@ async def get_all_tweets(api_key: Optional[str] = Header(None), db: AsyncSession
 
 @tweet_router.delete('/{tweet_id}')
 async def delete_tweet(
+        tweet_id: int,
+        api_key: Optional[str] = Header(None),
+        db: AsyncSession = Depends(get_session)
         # request: Request, db: Session = Depends(get_db)
 ):
-    pass
+    async with db.begin():
+        user = await db.execute(select(User).where(User.api_key == api_key))
+        user = user.scalar_one_or_none()
+        print('User: ', user)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        tweet = await db.execute(select(Tweet).where(Tweet.id == tweet_id))
+        tweet = tweet.scalar_one_or_none()
+        print('Tweet: ', tweet.__dict__)
+
+        if not tweet:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tweet not found"
+            )
+        # print('Ids: ', user.id, tweet.author_id)
+        if user.id != tweet.author_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="You can not delete this post"
+            )
+        await db.delete(tweet)
+        return {"result": True}
+
+
 #
 #
 # @app.post('/api/medias')
