@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, status, Depends, Header
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, column, delete
 
 from models.users import User, users_connections
 from schema.users import UserRegister, UserFull, UserFollowing, UserFollower
@@ -92,13 +92,44 @@ async def follow_user(user_id: int, api_key: Optional[str] = Header(None), db: A
             )
             await db.execute(stmt)
             await db.commit()
-            return user
+            return {"result": True}
         except IntegrityError:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="You are already following this user"
             )
 
+
+@user_router.delete('/{user_id}/follow')
+async def follow_user(user_id: int, api_key: Optional[str] = Header(None), db: AsyncSession = Depends(get_session)):
+    async with db.begin():
+        me = await db.execute(select(User).where(User.api_key == api_key))
+        me = me.scalar_one_or_none()
+        if not me:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+        stmt = select(users_connections).where(
+                column('follower_id') == me.id,
+                column('followed_id') == user_id
+            )
+        follow = await db.execute(stmt)
+        follow = follow.scalar_one_or_none()
+        if follow:
+            # await db.delete(follow)
+            # return {"result": True}
+            stmt = delete(users_connections).where(
+                column('follower_id') == me.id,
+                column('followed_id') == user_id
+            )
+            await db.execute(stmt)
+            # await db.delete(follow)
+            return {"result": True}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="You are not following this user"
+        )
 # @user_router.post("/signin")
 # async def sign_user_in(user: UserSignIn) -> dict:
 #     if user.username not in users:
