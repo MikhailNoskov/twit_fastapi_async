@@ -9,6 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from models.users import User, users_connections
 from schema.users import UserRegister, UserFollowing, UserFollower
+from schema.positive import PositiveResponse
 from database.connection import async_session_maker as session
 
 
@@ -46,7 +47,7 @@ async def get_me(api_key: Optional[str]):
             return user
 
 
-async def get_user(user_id: int, db: AsyncSession = Depends(session)):
+async def get_user(user_id: int):
     async with session() as db:
         async with db.begin():
             user = await db.execute(select(User).where(User.id == user_id).options(
@@ -90,7 +91,7 @@ async def set_follow_user(user_id: int, api_key: str):
                 )
                 await db.execute(stmt)
                 await db.commit()
-                return {"result": True}
+                return PositiveResponse(result=True)
             except IntegrityError:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -120,7 +121,7 @@ async def unfollow_user(user_id: int, api_key: Optional[str] = Header(None)):
                     (column('followed_id') == user_id)
                 )
                 await db.execute(stmt)
-                return {"result": True}
+                return PositiveResponse(result=True)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="You are not following this user"
