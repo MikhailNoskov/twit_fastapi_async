@@ -118,7 +118,8 @@ async def get_all_tweets(api_key: Optional[str] = Header(...)):
             # tweets = await db.execute(select(Tweet).options(selectinload(Tweet.author), subqueryload(Tweet.liked)))
             tweets = await db.execute(select(Tweet).options(
                 selectinload(Tweet.author),  # Eagerly load Author
-                subqueryload(Tweet.likes).options(subqueryload(Like.user))  # Eagerly load Likes
+                subqueryload(Tweet.likes).options(subqueryload(Like.user)),
+                subqueryload(Tweet.attachments)  # Eagerly load Likes
             ))
             tweets = tweets.scalars().all()
             tweets_response = []
@@ -130,12 +131,15 @@ async def get_all_tweets(api_key: Optional[str] = Header(...)):
                         id=tweet.author.id,
                         name=tweet.author.name
                     ),
-                    likes=[]
+                    likes=[],
+                    attachments=[]
                 )
                 for like in tweet.likes:
                     tweet_display.likes.append(
                         UserFollower(id=like.user.id, name=like.user.name)
                     )
+                for attachment in tweet.attachments:
+                    tweet_display.attachments.append(attachment.media_url)
                 tweets_response.append(tweet_display)
             return TweetsList(result=True, tweets=tweets_response)
             # return TweetsList(result=True, tweets=[TweetDisplay.from_orm(tweet) for tweet in tweets])

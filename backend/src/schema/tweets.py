@@ -8,6 +8,7 @@ class TweetDisplay(BaseModel):
     content: str
     author: UserFollower
     likes: Optional[List[UserFollower]]
+    attachments: List[str] = []
 
     class Config:
         orm_mode = True
