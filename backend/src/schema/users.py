@@ -3,7 +3,7 @@ from typing import Optional, List
 
 
 class UserRegister(BaseModel):
-    name: str
+    username: str
     password: str
 
     class Config:
@@ -32,29 +32,19 @@ class UserFollowing(BaseModel):
         orm_mode = True
 
 
-class UserFull(BaseModel):
-    result: bool = True
+class UserForResponse(BaseModel):
+    id: int
     name: str
-    password: str
     followers: List[UserFollower] = None
     following: List[UserFollowing] = None
 
     class Config:
         orm_mode = True
 
-# class NewUser(User):
-#     pass
-#
-#
-# class UserSignIn(BaseModel):
-#     email: EmailStr
-#     password: str
-#
-#     class Config :
-#         schema_extra = {
-#             "example": {
-#                 "email": "fastapi@packt.com",
-#                 "password": "strong!!!",
-#                 "events": [],
-#             }
-#         }
+
+class UserResponse(BaseModel):
+    result: bool
+    user: UserForResponse
+
+    class Config:
+        orm_mode = True
