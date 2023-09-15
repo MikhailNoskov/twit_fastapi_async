@@ -28,14 +28,14 @@ async def create_new_tweet(request: TweetCreate, api_key: str):
                     detail="User not found"
                 )
             new_tweet = Tweet(
-                content=request.text,
+                content=request.tweet_data,
                 author=user
             )
             db.add(new_tweet)
             await db.flush()
             await db.refresh(new_tweet)
-            if request.attachments:
-                await db.execute(update(Media).where(Media.id.in_(request.attachments)).values(tweet_id=new_tweet.id))
+            if request.tweet_media_ids:
+                await db.execute(update(Media).where(Media.id.in_(request.tweet_media_ids)).values(tweet_id=new_tweet.id))
             tweet = TweetResponse(tweet_id=new_tweet.id)
             return tweet
 

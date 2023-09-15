@@ -29,14 +29,14 @@ class User(Base):
     followers = relationship('User',
                              viewonly=True,
                              secondary=users_connections,
-                             primaryjoin=id == users_connections.c.follower_id,
-                             secondaryjoin=id == users_connections.c.followed_id,
+                             primaryjoin=id == users_connections.c.followed_id,
+                             secondaryjoin=id == users_connections.c.follower_id,
                              backref='following_of')
 
     following = relationship('User',
                              secondary=users_connections,
-                             primaryjoin=id == users_connections.c.followed_id,
-                             secondaryjoin=id == users_connections.c.follower_id,
+                             primaryjoin=id == users_connections.c.follower_id,
+                             secondaryjoin=id == users_connections.c.followed_id,
                              backref='followers_of')
 
     likes = relationship("Like", back_populates="user")

@@ -29,8 +29,8 @@ class TweetsList(BaseModel):
 
 
 class TweetCreate(BaseModel):
-    text: str
-    attachments: Optional[List[int]]
+    tweet_data: str
+    tweet_media_ids: Optional[List[int]]
 
 
 class TweetResponse(BaseModel):
