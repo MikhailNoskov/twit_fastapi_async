@@ -111,11 +111,9 @@ async def delete_like(tweet_id: int, api_key: str):
             return PositiveResponse(result=True)
 
 
-# @tweet_router.get('/', response_model=List[TweetDisplay])
 async def get_all_tweets(api_key: Optional[str] = Header(...)):
     async with session() as db:
         async with db.begin():
-            # tweets = await db.execute(select(Tweet).options(selectinload(Tweet.author), subqueryload(Tweet.liked)))
             tweets = await db.execute(select(Tweet).options(
                 selectinload(Tweet.author),  # Eagerly load Author
                 subqueryload(Tweet.likes).options(subqueryload(Like.user)),
