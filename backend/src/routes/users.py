@@ -27,13 +27,3 @@ async def me(api_key: Optional[str] = Header(...)):
 async def get_user_by_id(user_id: int, api_key: Optional[str] = Header(...)):
     result = await get_user(user_id)
     return {"result": True, "user": result}
-
-
-@user_router.post('/{user_id}/follow', response_model=PositiveResponse)
-async def follow_user(user_id: int, api_key: Optional[str] = Header(...)):
-    return await set_follow_user(user_id, api_key)
-
-
-@user_router.delete('/{user_id}/follow', response_model=PositiveResponse)
-async def follow_user(user_id: int, api_key: Optional[str] = Header(...)):
-    return await unfollow_user(user_id, api_key)
