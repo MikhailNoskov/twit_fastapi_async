@@ -33,12 +33,12 @@ async def verify_api_key(api_key: Optional[str] = Header(), db: AsyncSession = D
 
 
 @media_router.post('/', dependencies=[Depends(verify_api_key)], response_model=MediaResponse)
-async def post_new_media_file(image: UploadFile = File(...), db: AsyncSession = Depends(get_session)):
+async def post_new_media_file(file: UploadFile = File(...), db: AsyncSession = Depends(get_session)):
     letters = string.ascii_letters
     random_str = ''.join(random.choice(letters) for i in range(6))
     new = f'_{random_str}.'
-    filename = new.join(image.filename.rsplit('.', 1))
+    filename = new.join(file.filename.rsplit('.', 1))
     path = f'images/{filename}'
     with open(path, 'wb') as buffer:
-        shutil.copyfileobj(image.file, buffer)
+        shutil.copyfileobj(file.file, buffer)
     return await file_db_record(path)
