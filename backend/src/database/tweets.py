@@ -72,10 +72,11 @@ async def create_like(user, tweet_id: int):
             like = await db.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
             like = like.scalar_one_or_none()
             if like:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You have already liked this tweet"
-                )
+                # raise HTTPException(
+                #     status_code=status.HTTP_403_FORBIDDEN,
+                #     detail="You have already liked this tweet"
+                # )
+                return await delete_like(user, tweet_id)
             new_like = Like(user_id=user.id, tweet_id=tweet_id)
             db.add(new_like)
             await db.flush()
