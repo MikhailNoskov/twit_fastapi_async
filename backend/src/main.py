@@ -1,10 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+
 from routes.users import user_router
 from routes.tweets import tweet_router
 from routes.media import media_router
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
 
 app = FastAPI()
 
@@ -26,5 +28,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+app.mount('/images', StaticFiles(directory='images'), name='images')
