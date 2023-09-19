@@ -16,35 +16,30 @@ from schema.positive import PositiveResponse
 from database.connection import async_session_maker as session
 
 
-async def create_new_tweet(request: TweetCreate, api_key: str):
+async def create_new_tweet(user: User, data: TweetCreate):
     async with session() as db:
         async with db.begin():
-            #  TODO write get user method for all the endpoint
-            user = await db.execute(select(User).where(User.api_key == api_key))
-            user = user.scalar_one_or_none()
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="User not found"
                 )
             new_tweet = Tweet(
-                content=request.tweet_data,
+                content=data.tweet_data,
                 author=user
             )
             db.add(new_tweet)
             await db.flush()
             await db.refresh(new_tweet)
-            if request.tweet_media_ids:
-                await db.execute(update(Media).where(Media.id.in_(request.tweet_media_ids)).values(tweet_id=new_tweet.id))
+            if data.tweet_media_ids:
+                await db.execute(update(Media).where(Media.id.in_(data.tweet_media_ids)).values(tweet_id=new_tweet.id))
             tweet = TweetResponse(tweet_id=new_tweet.id)
             return tweet
 
 
-async def remove_tweet(tweet_id: int, api_key: str):
+async def remove_tweet(user: User, tweet_id: int):
     async with session() as db:
         async with db.begin():
-            user = await db.execute(select(User).where(User.api_key == api_key))
-            user = user.scalar_one_or_none()
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -66,41 +61,37 @@ async def remove_tweet(tweet_id: int, api_key: str):
             return PositiveResponse(result=True)
 
 
-async def create_like(tweet_id: int, api_key: str):
+async def create_like(user, tweet_id: int):
     async with session() as db:
         async with db.begin():
-            me = await db.execute(select(User).where(User.api_key == api_key))
-            me = me.scalar_one_or_none()
-            if not me:
+            if not user:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Access denied"
                 )
-            like = await db.execute(select(Like).where(Like.user_id == me.id, Like.tweet_id == tweet_id))
+            like = await db.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
             like = like.scalar_one_or_none()
             if like:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You have already liked this tweet"
                 )
-            new_like = Like(user_id=me.id, tweet_id=tweet_id)
+            new_like = Like(user_id=user.id, tweet_id=tweet_id)
             db.add(new_like)
             await db.flush()
             await db.refresh(new_like)
             return PositiveResponse(result=True)
 
 
-async def delete_like(tweet_id: int, api_key: str):
+async def delete_like(user, tweet_id: int):
     async with session() as db:
         async with db.begin():
-            me = await db.execute(select(User).where(User.api_key == api_key))
-            me = me.scalar_one_or_none()
-            if not me:
+            if not user:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Access denied"
                 )
-            like = await db.execute(select(Like).where(Like.user_id == me.id, Like.tweet_id == tweet_id))
+            like = await db.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
             like = like.scalar_one_or_none()
             if not like:
                 raise HTTPException(
@@ -111,7 +102,7 @@ async def delete_like(tweet_id: int, api_key: str):
             return PositiveResponse(result=True)
 
 
-async def get_all_tweets(api_key: Optional[str] = Header(...)):
+async def get_all_tweets(user, api_key: Optional[str] = Header(...)):
     async with session() as db:
         async with db.begin():
             tweets = await db.execute(select(Tweet).options(

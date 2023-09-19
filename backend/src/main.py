@@ -22,12 +22,12 @@ app.include_router(media_router, prefix='/api/medias')
 
 @app.middleware("http")
 async def add_user(request: Request, call_next):
-    print(request.headers.get('api-key'))
     if 'api-key' in request.headers.keys():
         api_key = request.headers.get('api-key', None)
         user = await verify_api_key(api_key=api_key)
-        print(user)
         request.state.user = user
+    else:
+        request.state.user = None
     return await call_next(request)
 
 
