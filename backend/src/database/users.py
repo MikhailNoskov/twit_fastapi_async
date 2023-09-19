@@ -32,10 +32,10 @@ async def create_user(data: UserRegister) -> dict:
             }
 
 
-async def get_me(api_key: Optional[str]):
+async def get_me(user_id: int):
     async with session() as db:
         async with db.begin():
-            user = await db.execute(select(User).where(User.api_key == api_key).options(
+            user = await db.execute(select(User).where(User.id == user_id).options(
              joinedload(User.followers),
              joinedload(User.following)))
             user = user.scalar()
@@ -62,13 +62,12 @@ async def get_user(user_id: int):
             return user
 
 
-async def set_follow_user(user_id: int, api_key: str):
+async def set_follow_user(user_id: int, me: User):
     async with session() as db:
         async with db.begin():
-            me = await db.execute(select(User).where(User.api_key == api_key))
-            me = me.scalar_one_or_none()
-            user = await db.execute(select(User).where(User.id == user_id))
-            user = user.scalar_one_or_none()
+            # user = await db.execute(select(User).where(User.id == user_id))
+            # user = user.scalar_one_or_none()
+            user = await get_user(user_id)
             if not me:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -99,11 +98,11 @@ async def set_follow_user(user_id: int, api_key: str):
                 )
 
 
-async def unfollow_user(user_id: int, api_key: Optional[str] = Header(None)):
+async def unfollow_user(user_id: int, me: User):
     async with session() as db:
         async with db.begin():
-            me = await db.execute(select(User).where(User.api_key == api_key))
-            me = me.scalar_one_or_none()
+            # me = await db.execute(select(User).where(User.api_key == api_key))
+            # me = me.scalar_one_or_none()
             if not me:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,

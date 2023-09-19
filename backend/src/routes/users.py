@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Header
+from fastapi.requests import Request
 
 from schema.users import UserRegister, UserResponse
 from schema.positive import PositiveResponse
@@ -18,8 +19,9 @@ async def sign_new_user(data: UserRegister) -> dict:
 
 
 @user_router.get('/me', response_model=UserResponse)
-async def me(api_key: Optional[str] = Header(...)):
-    result = await get_me(api_key)
+async def me(request: Request, api_key: Optional[str] = Header(...)):
+    me = request.state.user
+    result = await get_me(me.id)
     return {"result": True, "user": result}
 
 
@@ -30,10 +32,10 @@ async def get_user_by_id(user_id: int, api_key: Optional[str] = Header(...)):
 
 
 @user_router.post('/{user_id}/follow', response_model=PositiveResponse)
-async def follow_user(user_id: int, api_key: Optional[str] = Header(...)):
-    return await set_follow_user(user_id, api_key)
+async def follow_user(request: Request, user_id: int, api_key: Optional[str] = Header(...)):
+    return await set_follow_user(user_id, request.state.user)
 
 
 @user_router.delete('/{user_id}/follow', response_model=PositiveResponse)
-async def follow_user(user_id: int, api_key: Optional[str] = Header(...)):
-    return await unfollow_user(user_id, api_key)
+async def stop_follow_user(request: Request, user_id: int, api_key: Optional[str] = Header(...)):
+    return await unfollow_user(user_id, request.state.user)
