@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from database.connection import Base
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 # from .users import tweet_connections
 from .media import Media
 
@@ -14,7 +14,7 @@ class Tweet(Base):
     content = Column(String(500), nullable=False)
     author_id = Column(Integer, ForeignKey('users.id'))
     author = relationship('User', back_populates='tweets')
-    likes = relationship("Like", back_populates="tweet")
+    likes = relationship("Like", back_populates="tweet", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"Tweet Nr{self.id}"
