@@ -131,5 +131,7 @@ async def get_all_tweets(user, api_key: Optional[str] = Header(...)):
                 for attachment in tweet.attachments:
                     tweet_display.attachments.append(attachment.media_url)
                 tweets_response.append(tweet_display)
+            # Optimize with db query
+            tweets_response = sorted(tweets_response, key=lambda t: len(t.likes), reverse=True)
             return TweetsList(result=True, tweets=tweets_response)
             # return TweetsList(result=True, tweets=[TweetDisplay.from_orm(tweet) for tweet in tweets])
