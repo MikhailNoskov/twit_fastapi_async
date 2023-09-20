@@ -1,63 +1,51 @@
-# @app.get('/api/tweets/{api_key}')
-# async def send_tweet(api_key: str):
-#     print(api_key)
-#     # print(request.__dict__)
-#     # print(request.__dict__['scope']['_query_params'])
-#     if api_key == 'test':
-#         return {
-#             "result": "true",
-#             "tweets": [
-#                 {
-#                     "id": 1,
-#                     "content": "Hello Hi!",
-#                     "attachments": [],
-#                     "author":
-#                         {
-#                             "id": 1,
-#                             "name": "Mike"
-#                         },
-#                     "likes": [
-#                         {
-#                             "user_id": 2,
-#                             "name": "Alla"
-#                         }
-#                     ]
-#                 }
-#             ]
-#         }
-#     return False
+from typing import Optional, List
+
+from fastapi import APIRouter, HTTPException, status, Header, Depends
+from fastapi.requests import Request
+from schema.tweets import TweetDisplay, TweetsList, TweetCreate, TweetResponse
+from schema.positive import PositiveResponse
+from database.tweets import create_new_tweet, remove_tweet, create_like, delete_like, get_all_tweets
+from database.users import set_follow_user, unfollow_user
+
+tweet_router = APIRouter(tags=["tweets"])
 
 
-# @app.delete('/api/tweets/{tweet_id}')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
+@tweet_router.post('/', response_model=TweetResponse)
+async def post_new_tweet(request: Request, data: TweetCreate, api_key: Optional[str] = Header(...)):
+    user = request.state.user
+    return await create_new_tweet(user, data)
+
+
+@tweet_router.delete('/{tweet_id}')
+async def delete_tweet(request: Request, tweet_id: int, api_key: Optional[str] = Header(...)):
+    user = request.state.user
+    return await remove_tweet(user, tweet_id)
+
+
+@tweet_router.post('/{tweet_id}/likes')
+async def like_tweet(request: Request, tweet_id: int, api_key: Optional[str] = Header(...)):
+    user = request.state.user
+    return await create_like(user, tweet_id)
+
+
+@tweet_router.delete('/{tweet_id}/likes')
+async def unlike_tweet(request: Request, tweet_id: int, api_key: Optional[str] = Header(...)):
+    user = request.state.user
+    return await delete_like(user, tweet_id)
+
+
+@tweet_router.get('/', response_model=TweetsList)
+# @tweet_router.get('/', response_model=List[TweetDisplay])
+async def get_tweets(request: Request, api_key: Optional[str] = Header(...)):
+    user = request.state.user
+    return await get_all_tweets(user)
+
+
+# @tweet_router.post('/{user_id}/follow', response_model=PositiveResponse)
+# async def follow_user(user_id: int, api_key: Optional[str] = Header(...)):
+#     return await set_follow_user(user_id, api_key)
 #
 #
-# @app.post('/api/medias')
-# async def post_image(request: Request, db: Session = Depends(get_db)):
-#     pass
-#
-#
-# @app.post('/api/tweets/{tweet_id}/likes')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
-#
-#
-# @app.delete('/api/tweets/{tweet_id}/likes')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
-#
-#
-# @app.post('/api/users/{user_id}/follow')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
-#
-#
-# @app.delete('/api/users/{user_id}/follow')
-# async def send_tweet(request: Request, db: Session = Depends(get_db)):
-#     pass
-# @app.get("/")
-# async def home(request: Request, db: Session = Depends(get_db)):
-#     todos = db.query(models.Smth).all()
-#     return templates.TemplateResponse("base.html",
-#                                       {"request": request, "todo_list": todos})
+# @tweet_router.delete('/{user_id}/follow', response_model=PositiveResponse)
+# async def follow_user(user_id: int, api_key: Optional[str] = Header(...)):
+#     return await unfollow_user(user_id, api_key)

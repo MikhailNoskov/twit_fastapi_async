@@ -1,95 +1,41 @@
-from fastapi import APIRouter, HTTPException, status
-from models.users import User
-from schema.users import UserRegister
-from db import async_session
-from sqlalchemy import select
+from typing import Optional
+
+from fastapi import APIRouter, Header
+from fastapi.requests import Request
+
+from schema.users import UserRegister, UserResponse
+from schema.positive import PositiveResponse
+from database.users import create_user, get_me, get_user, set_follow_user, unfollow_user
+
 
 user_router = APIRouter(
-    tags=["User"]
+    tags=["users"]
 )
 
 
 @user_router.post("/signup")
 async def sign_new_user(data: UserRegister) -> dict:
-    print(data)
-    async with async_session() as session:
-        async with session.begin():
-            user = await session.execute(select(User).where(User.password == data.password))
-            user = user.scalar_one_or_none()
-            if user:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="User with supplied username exists"
-                )
-            user = User(username=data.username, password=data.password)
-            session.add(user)
-            await session.flush()
-            return {
-                "message": "User successfully registered!"
-            }
+    return await create_user(data=data)
 
-@user_router.get("/{id}")
-async def retrieve_event(id: int):
-    async with async_session() as session:
-        async with session.begin():
-            user = await session.execute(select(User).where(User.id == id))
-            user = user.scalar_one_or_none()
-            if user:
-                return {'yes': 'yes'}
-            raise HTTPException(
-                status_code=status. HTTP_404_NOT_FOUND,
-                detail="Event with supplied ID does not exist"
-            )
 
-# @user_router.post("/signin")
-# async def sign_user_in(user: UserSignIn) -> dict:
-#     if user.username not in users:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="User does not exist")
-#     if users[user.username].password != user.password:
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Wrong credentials passed"
-#         )
-#     return {
-#         "message": "User signed in successfully"
-#     }
-#
-# @user_router.post("/signup")
-# async def sign_new_user(data: User) -> dict:
-#     if data.email in users:
-#         raise HTTPException(
-#             status_code=status.HTTP_409_CONFLICT,
-#             detail="User with supplied username exists"
-#         )
-#     users[data.email] = data
-#     return {
-#         "message": "User successfully registered!"
-#     }
-#
-#
-# @user_router.post("/signin")
-# async def sign_user_in(user: UserSignIn) -> dict:
-#     if user.email not in users:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="User does not exist")
-#     if users[user.email].password != user.password:
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Wrong credentials passed"
-#         )
-#     return {
-#         "message": "User signed in successfully"
-#     }
-#
-#
-# # @app.get('/api/users/me')
-# # async def me(request: Request, db: Session = Depends(get_db)):
-# #     pass
-# #
-# #
-# # @app.get('/api/users/{user_id}')
-# # async def user(request: Request, db: Session = Depends(get_db)):
-# #     pass
+@user_router.get('/me', response_model=UserResponse)
+async def me(request: Request, api_key: Optional[str] = Header(...)):
+    me = request.state.user
+    result = await get_me(me.id)
+    return {"result": True, "user": result}
+
+
+@user_router.get('/{user_id}', response_model=UserResponse)
+async def get_user_by_id(user_id: int, api_key: Optional[str] = Header(...)):
+    result = await get_user(user_id)
+    return {"result": True, "user": result}
+
+
+@user_router.post('/{user_id}/follow', response_model=PositiveResponse)
+async def follow_user(request: Request, user_id: int, api_key: Optional[str] = Header(...)):
+    return await set_follow_user(user_id, request.state.user)
+
+
+@user_router.delete('/{user_id}/follow', response_model=PositiveResponse)
+async def stop_follow_user(request: Request, user_id: int, api_key: Optional[str] = Header(...)):
+    return await unfollow_user(user_id, request.state.user)
