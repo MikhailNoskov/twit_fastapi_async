@@ -5,6 +5,7 @@ from typing import Optional, List
 class UserRegister(BaseModel):
     username: str
     password: str
+    api_key: str
 
     class Config:
         orm_mode = True
@@ -12,6 +13,7 @@ class UserRegister(BaseModel):
             "example": {
                 "username": "mike@klike.com",
                 "password": "strong!!!",
+                "api_key": "test"
             }
         }
 

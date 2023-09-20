@@ -23,7 +23,7 @@ async def create_user(data: UserRegister) -> dict:
                     status_code=status.HTTP_409_CONFLICT,
                     detail="User with supplied username exists"
                 )
-            user = User(name=data.username, password=data.password)
+            user = User(name=data.username, password=data.password, api_key=data.api_key)
             db.add(user)
             await db.flush()
             await db.refresh(user)
