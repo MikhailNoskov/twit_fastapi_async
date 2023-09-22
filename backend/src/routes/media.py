@@ -7,7 +7,7 @@ from fastapi.requests import Request
 
 from schema.media import MediaResponse
 from database.media import file_db_record
-
+from celery_app import resize_image
 
 media_router = APIRouter(
     tags=["media"]
@@ -27,6 +27,6 @@ async def post_new_media_file(request: Request, file: UploadFile = File(...)):
     new = f'_{random_str}.'
     filename = new.join(file.filename.rsplit('.', 1))
     path = f'images/{filename}'
-    with open(path, 'wb') as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    file_bytes = await file.read()
+    resize_image.delay(path, file_bytes)
     return await file_db_record(path)
