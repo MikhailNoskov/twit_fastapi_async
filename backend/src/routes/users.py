@@ -1,3 +1,4 @@
+import logging.config
 from typing import Optional
 
 from fastapi import APIRouter, Header
@@ -6,6 +7,12 @@ from fastapi.requests import Request
 from schema.users import UserRegister, UserResponse
 from schema.positive import PositiveResponse
 from database.users import create_user, get_me, get_user, set_follow_user, unfollow_user
+from logging_conf import logs_config
+
+
+logging.config.dictConfig(logs_config)
+logger = logging.getLogger("app.user_endpoint")
+logger.setLevel("DEBUG")
 
 
 user_router = APIRouter(
@@ -15,11 +22,13 @@ user_router = APIRouter(
 
 @user_router.post("/signup")
 async def sign_new_user(data: UserRegister) -> dict:
+    logger.debug(msg='New user registered')
     return await create_user(data=data)
 
 
 @user_router.get('/me', response_model=UserResponse)
 async def me(request: Request, api_key: Optional[str] = Header(...)):
+    logger.info(msg='Me endpoint called')
     me = request.state.user
     result = await get_me(me.id)
     return {"result": True, "user": result}
