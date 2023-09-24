@@ -18,7 +18,7 @@ logs_config = {
             "format": "%(levelname)s | %(name)s | %(message)s"
         },
         "custom": {
-            "format": "%(levelname)s | %(name)s | %(lineno)s | %(asctime)s | %(message)s"
+            "format": "%(levelname)s: %(name)s | %(asctime)s | %(message)s"
         }
     },
     "handlers": {
