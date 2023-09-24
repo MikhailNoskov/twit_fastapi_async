@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import TimedRotatingFileHandler
 
 
 class CustomStreamHandler(logging.StreamHandler):
@@ -24,27 +25,27 @@ logs_config = {
         "console": {
             "class": 'logging.StreamHandler',
             "level": "DEBUG",
-            "formatter": "base",
+            "formatter": "custom",
         },
         "file": {
             "()": CustomStreamHandler,
-            "level": "INFO",
-            "formatter": "base",
+            "level": "DEBUG",
+            "formatter": "custom",
         },
-        'celery_handler': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': f'logs/celery.log',
-            'when': 'midnight',
-            'backupCount': 10,
-            'formatter': 'custom',
-        },
+        # 'celery_handler': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.handlers.TimedRotatingFileHandler',
+        #     'filename': f'logs/celery.log',
+        #     'when': 'midnight',
+        #     'backupCount': 10,
+        #     'formatter': 'custom',
+        # },
     },
     "loggers": {
         "app": {
             "level": "DEBUG",
             "handlers": ["console", "file"],
-            # "propagate": False,
+            "propagate": False,
         }
     },
 }

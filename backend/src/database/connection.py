@@ -1,8 +1,16 @@
 # from typing import Optional
+import logging.config
+
 
 from pydantic import BaseSettings
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
+from logging_conf import logs_config
+
+
+logging.config.dictConfig(logs_config)
+logger = logging.getLogger("app.data_base")
+logger.setLevel("DEBUG")
 
 
 engine = create_async_engine('postgresql+asyncpg://postgres:postgres@localhost:5432/twitter', pool_pre_ping=True)
@@ -12,6 +20,7 @@ Base = declarative_base()
 
 async def get_session():
     async with async_session_maker() as session:
+        logger.debug(msg='Database session yielded')
         yield session
 
 

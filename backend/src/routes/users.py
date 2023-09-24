@@ -11,7 +11,7 @@ from logging_conf import logs_config
 
 
 logging.config.dictConfig(logs_config)
-logger = logging.getLogger("app.user_endpoint")
+logger = logging.getLogger("app.user_routes")
 logger.setLevel("DEBUG")
 
 
@@ -22,7 +22,7 @@ user_router = APIRouter(
 
 @user_router.post("/signup")
 async def sign_new_user(data: UserRegister) -> dict:
-    logger.debug(msg='New user registered')
+    logger.debug(msg='Trying register new user')
     return await create_user(data=data)
 
 
@@ -36,15 +36,18 @@ async def me(request: Request, api_key: Optional[str] = Header(...)):
 
 @user_router.get('/{user_id}', response_model=UserResponse)
 async def get_user_by_id(user_id: int, api_key: Optional[str] = Header(...)):
+    logger.info(msg=f'Get {user_id} endpoint called')
     result = await get_user(user_id)
     return {"result": True, "user": result}
 
 
 @user_router.post('/{user_id}/follow', response_model=PositiveResponse)
 async def follow_user(request: Request, user_id: int, api_key: Optional[str] = Header(...)):
+    logger.info(msg=f'{request.state.user} tries to follow user {user_id}')
     return await set_follow_user(user_id, request.state.user)
 
 
 @user_router.delete('/{user_id}/follow', response_model=PositiveResponse)
 async def stop_follow_user(request: Request, user_id: int, api_key: Optional[str] = Header(...)):
+    logger.info(msg=f'{request.state.user} tries to unfollow user {user_id}')
     return await unfollow_user(user_id, request.state.user)
