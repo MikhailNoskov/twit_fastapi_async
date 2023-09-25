@@ -1,6 +1,8 @@
 from typing import Optional
-
 import uvicorn
+import sentry_sdk
+
+
 from fastapi import FastAPI, Depends, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,6 +14,18 @@ from routes.users import user_router
 from routes.tweets import tweet_router
 from routes.media import media_router
 from models.users import User
+
+sentry_sdk.init(
+    dsn="https://c699f8e763ecd3e18f34cd56ed3b435c@o1075355.ingest.sentry.io/4505930641309696",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
 
 app = FastAPI()
 
@@ -34,6 +48,11 @@ async def add_user(request: Request, call_next):
 @app.get('/api/userinfo/')
 def index():
     return RedirectResponse(url="/api/users/me")
+
+
+@app.get("/sentry-debug")
+async def trigger_error():
+    division_by_zero = 1 / 0
 
 
 app.add_middleware(
