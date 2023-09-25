@@ -2,9 +2,7 @@ from typing import Optional
 import logging.config
 
 from fastapi import HTTPException, status, Depends, Header
-from sqlalchemy import select, insert, update, column, delete
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update
 from sqlalchemy.orm import joinedload, selectinload, subqueryload, aliased
 
 
@@ -14,18 +12,16 @@ from models.media import Media
 from schema.tweets import TweetDisplay, TweetsList, TweetCreate, TweetResponse
 from schema.users import UserFollower
 from schema.positive import PositiveResponse
-from database.connection import get_session
 from logging_conf import logs_config
+from database.services import AbstractService
+
 
 logging.config.dictConfig(logs_config)
 logger = logging.getLogger("app.db_tweets")
 logger.setLevel("DEBUG")
 
 
-class TweetService:
-    def __init__(self, session: AsyncSession = Depends(get_session)):
-        self.session = session
-
+class TweetService(AbstractService):
     async def create_new_tweet(self, user: User, data: TweetCreate):
         async with self.session.begin():
             if not user:

@@ -1,18 +1,16 @@
-from typing import Optional
 import logging.config
 
 from fastapi import HTTPException, status, Depends, Header
 from sqlalchemy import select, insert, column, delete
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 
 from models.users import User, users_connections
 from schema.users import UserRegister, UserFollowing, UserFollower
 from schema.positive import PositiveResponse
-from database.connection import get_session
 from logging_conf import logs_config
+from database.services import AbstractService
 
 
 logging.config.dictConfig(logs_config)
@@ -20,10 +18,7 @@ logger = logging.getLogger("app.db_users")
 logger.setLevel("DEBUG")
 
 
-class UserService:
-    def __init__(self, session: AsyncSession = Depends(get_session)):
-        self.session = session
-
+class UserService(AbstractService):
     async def create_user(self, data: UserRegister) -> dict:
         async with self.session.begin():
             user = await self.session.execute(select(User).where(User.name == data.username))
