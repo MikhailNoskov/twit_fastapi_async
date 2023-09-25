@@ -1,10 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional, List
-from database.connection import Base
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref
-# from .users import tweet_connections
-from .media import Media
+
+from database.connection import Base
 
 
 class Tweet(Base):
