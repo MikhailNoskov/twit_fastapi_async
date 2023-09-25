@@ -7,7 +7,6 @@ from fastapi.requests import Request
 from schema.tweets import TweetDisplay, TweetsList, TweetCreate, TweetResponse
 from schema.positive import PositiveResponse
 from database.tweets import TweetService
-from database.users import set_follow_user, unfollow_user
 from logging_conf import logs_config
 
 
