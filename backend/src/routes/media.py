@@ -1,13 +1,12 @@
-import shutil
 import string
 import random
 import logging.config
 
-from fastapi import APIRouter, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, Depends
 from fastapi.requests import Request
 
 from schema.media import MediaResponse
-from database.media import file_db_record
+from database.media import MediaService
 from celery_app import resize_image
 from logging_conf import logs_config
 
@@ -20,7 +19,7 @@ logger.setLevel("DEBUG")
 
 
 @media_router.post('/', response_model=MediaResponse)
-async def post_new_media_file(request: Request, file: UploadFile = File(...)):
+async def post_new_media_file(request: Request, service: MediaService = Depends(), file: UploadFile = File(...)):
     user = request.state.user
     if not user:
         logger.error('Access denied')
@@ -36,4 +35,4 @@ async def post_new_media_file(request: Request, file: UploadFile = File(...)):
     path = f'images/{filename}'
     file_bytes = await file.read()
     resize_image.delay(path, file_bytes)
-    return await file_db_record(path)
+    return await service.file_db_record(path=path)

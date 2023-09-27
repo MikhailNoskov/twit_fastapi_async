@@ -9,12 +9,6 @@ users_connections = Table('users_connections', Base.metadata,
                           Column('followed_id', Integer, ForeignKey('users.id')),
                           Index('unique_follow', 'follower_id', 'followed_id', unique=True))
 
-# tweet_connections = Table('tweet_connections', Base.metadata,
-#                           Column('id', Integer, primary_key=True, autoincrement=True),
-#                           Column('liker_id', Integer, ForeignKey('users.id')),
-#                           Column('tweet_id', Integer, ForeignKey('tweets.id')),
-#                           Index('unique_tweet', 'liker_id', 'tweet_id', unique=True))
-
 
 class User(Base):
     __tablename__ = 'users'
@@ -39,17 +33,6 @@ class User(Base):
                              backref='followers_of', cascade="all, delete")
 
     likes = relationship("Like", back_populates="user", cascade="all, delete")
-    # likes = relationship('Tweet',
-    #                      viewonly=True,
-    #                      secondary=tweet_connections,
-    #                      primaryjoin=id == tweet_connections.c.liker_id,
-    #                      secondaryjoin=id == tweet_connections.c.tweet_id,
-    #                      backref='liked_of')
 
     def __repr__(self):
         return f"{self.name}"
-
-    # def to_dict(self):
-    #     columns = self.__table__.columns.keys()
-    #     user_dict = {column: getattr(self, column) for column in columns}
-    #     return user_dict
