@@ -6,7 +6,13 @@ from database.connection import Settings
 
 settings = Settings()
 
+
 def create_access_token(user: str) -> str:
+    """
+    Create access token function
+    :param user: User in the form of string
+    :return: Access token as a string
+    """
     payload = {
         "user": user,
         "expires": time.time() + 3600
@@ -14,7 +20,13 @@ def create_access_token(user: str) -> str:
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
     return token
 
+
 def verify_access_token(token: str) -> dict:
+    """
+    Access token verification function
+    :param token: Access token as a string
+    :return: Dict data including User as a string and expires attr as a timestamp
+    """
     try:
         data = jwt.decode(token, settings.SECRET_KEY)
         expire = data.get("expires")
