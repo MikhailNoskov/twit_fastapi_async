@@ -19,6 +19,11 @@ logger.setLevel("DEBUG")
 
 
 async def verify_api_key(api_key: str):
+    """
+    Api key verification function
+    :param api_key: Received api key as a string
+    :return: User instance found by api key
+    """
     async with session() as db:
         async with db.begin():
             user = await db.execute(select(User).where(User.api_key == api_key))
