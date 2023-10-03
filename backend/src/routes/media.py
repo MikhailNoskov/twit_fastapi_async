@@ -20,6 +20,13 @@ logger.setLevel("DEBUG")
 
 @media_router.post('/', response_model=MediaResponse)
 async def post_new_media_file(request: Request, service: MediaService = Depends(), file: UploadFile = File(...)):
+    """
+    Image file save endpoint
+    :param request: Request
+    :param service: Media db connect service instance
+    :param file: Uploaded file
+    :return: Image file info db create method of Media service
+    """
     user = request.state.user
     if not user:
         logger.error('Access denied')
