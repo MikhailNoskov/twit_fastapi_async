@@ -10,6 +10,10 @@ from database.connection import Base, get_session
 
 @pytest.fixture(scope="session")
 def event_loop():
+    """
+    Event loop generator
+    :return: Yields new async event loop
+    """
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
@@ -17,6 +21,10 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 async def test_session():
+    """
+    Test db session connection generator
+    :return: Yields async connection to blank db
+    """
     db_url = "postgresql+asyncpg://postgres:postgres@localhost/testdb"
     engine = create_async_engine(db_url, echo=True)
     async_session_maker = async_sessionmaker(
@@ -37,6 +45,11 @@ async def test_session():
 
 @pytest.fixture(scope='session')
 async def test_app(test_session):
+    """
+    Get test application function
+    :param test_session: async db session
+    :return: Test app instance
+    """
     async def get_test_session():
         session = await test_session.__anext__()
         return session

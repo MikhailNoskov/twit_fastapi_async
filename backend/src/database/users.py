@@ -19,7 +19,15 @@ logger.setLevel("DEBUG")
 
 
 class UserService(AbstractService):
+    """
+    Service for db connection for User cors
+    """
     async def create_user(self, data: UserRegister) -> dict:
+        """
+        Create new User method
+        :param data: User info received
+        :return: User create confirmation
+        """
         async with self.session.begin():
             user = await self.session.execute(select(User).where(User.name == data.username))
             user = user.scalar_one_or_none()
@@ -46,7 +54,12 @@ class UserService(AbstractService):
                 "message": "User successfully registered!"
             }
 
-    async def get_me(self, user_id: int):
+    async def get_me(self, user_id: int) -> User:
+        """
+        Get current authenticated user method
+        :param user_id: int
+        :return: User instance
+        """
         async with self.session.begin():
             user = await self.session.execute(select(User).where(User.id == user_id).options(
              joinedload(User.followers),
@@ -61,8 +74,12 @@ class UserService(AbstractService):
             logger.debug('User retrieved for me endpoint')
             return user
 
-    async def get_user(self, user_id: int):
-        # async with self.session.begin():
+    async def get_user(self, user_id: int) -> User:
+        """
+        Get user by ID method
+        :param user_id: int
+        :return: User instance
+        """
         user = await self.session.execute(select(User).where(User.id == user_id).options(
          joinedload(User.followers),
          joinedload(User.following)))
@@ -76,7 +93,13 @@ class UserService(AbstractService):
         logger.debug('User retrieved for id endpoint')
         return user
 
-    async def set_follow_user(self, user_id: int, me: User):
+    async def set_follow_user(self, user_id: int, me: User) -> PositiveResponse:
+        """
+        Follow user method
+        :param user_id: int
+        :param me: Curent authenticated user
+        :return: Positive response in case of successful follow
+        """
         async with self.session.begin():
             user = await self.get_user(user_id)
             if not me:
@@ -112,7 +135,13 @@ class UserService(AbstractService):
                     detail="You are already following this user"
                 )
 
-    async def unfollow_user(self, user_id: int, me: User):
+    async def unfollow_user(self, user_id: int, me: User) -> PositiveResponse:
+        """
+        Unfollow user method
+        :param user_id: int
+        :param me: Curent authenticated user
+        :return: Positive response in case of successful unfollow
+        """
         async with self.session.begin():
             if not me:
                 logger.error(msg="Access denied")

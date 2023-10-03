@@ -5,6 +5,9 @@ from database.connection import Base
 
 
 class Media(Base):
+    """
+    Image file db info model
+    """
     __tablename__ = 'medias'
 
     id = Column(Integer, primary_key=True, index=True)

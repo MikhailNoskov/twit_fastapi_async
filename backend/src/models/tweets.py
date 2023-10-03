@@ -5,6 +5,9 @@ from database.connection import Base
 
 
 class Tweet(Base):
+    """
+    Tweet model
+    """
     __tablename__ = 'tweets'
 
     id = Column(Integer, primary_key=True, index=True)
@@ -21,6 +24,9 @@ Tweet.attachments = relationship("Media", back_populates="tweet")
 
 
 class Like(Base):
+    """
+    Like model
+    """
     __tablename__ = "likes"
 
     id = Column(Integer, primary_key=True, index=True)

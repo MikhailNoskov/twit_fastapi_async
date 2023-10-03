@@ -22,7 +22,16 @@ logger.setLevel("DEBUG")
 
 
 class TweetService(AbstractService):
-    async def create_new_tweet(self, user: User, data: TweetCreate):
+    """
+    Service for db connection for Tweet cors
+    """
+    async def create_new_tweet(self, user: User, data: TweetCreate) -> TweetResponse:
+        """
+        New tweet create method
+        :param user: User instance
+        :param data: Tweet data including content, likes and author info
+        :return: Tweet response with the id of tweet created
+        """
         async with self.session.begin():
             if not user:
                 logger.warning(msg='Access denied')
@@ -50,7 +59,13 @@ class TweetService(AbstractService):
             logger.info(msg='Tweet created')
             return tweet
 
-    async def remove_tweet(self, user: User, tweet_id: int):
+    async def remove_tweet(self, user: User, tweet_id: int) -> PositiveResponse:
+        """
+        Tweet delete method
+        :param user: User instance
+        :param tweet_id: ID of the tweet being deleted
+        :return: Positive response in case of successful delete
+        """
         async with self.session.begin():
             if not user:
                 logger.warning(msg='Access denied')
@@ -76,7 +91,13 @@ class TweetService(AbstractService):
             logger.warning(msg='Tweet has been deleted')
             return PositiveResponse(result=True)
 
-    async def create_like(self, user, tweet_id: int):
+    async def create_like(self, user, tweet_id: int) -> PositiveResponse:
+        """
+        Like created method
+        :param user: User instance
+        :param tweet_id: ID of the tweet being liked
+        :return: Positive response in case of successful like
+        """
         async with self.session.begin():
             if not user:
                 logger.warning(msg='Access denied')
@@ -98,7 +119,13 @@ class TweetService(AbstractService):
             logger.debug(msg='Tweet is liked')
             return PositiveResponse(result=True)
 
-    async def delete_like(self, user, tweet_id: int):
+    async def delete_like(self, user, tweet_id: int) -> PositiveResponse:
+        """
+        Like delete method
+        :param user: User instance
+        :param tweet_id: ID of the tweet being unliked
+        :return: Positive response in case of successful unlike
+        """
         async with self.session.begin():
             if not user:
                 logger.warning(msg='Access denied')
@@ -119,6 +146,12 @@ class TweetService(AbstractService):
             return PositiveResponse(result=True)
 
     async def get_all_tweets(self, user, api_key: Optional[str] = Header(...)):
+        """
+        Get all the tweets for the current user
+        :param user: Instance of current user
+        :param api_key: #  Remove it!!!!
+        :return: List of the Tweets which can be seen by current User
+        """
         async with self.session.begin():
             tweets = await self.session.execute(select(Tweet).options(
                 selectinload(Tweet.author),  # Eagerly load Author

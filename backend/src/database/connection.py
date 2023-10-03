@@ -19,6 +19,10 @@ Base = declarative_base()
 
 
 async def get_session():
+    """
+    Async db session generator
+    :return: Yields db async connection
+    """
     async with async_session_maker() as session:
         logger.debug(msg='Database session yielded')
         yield session

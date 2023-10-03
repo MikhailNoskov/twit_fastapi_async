@@ -7,6 +7,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/signin")
 
 
 async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
+    """
+    Token verification function
+    :param token: Provided oauth2 token
+    :return: User returned by token
+    """
     if not token:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -12,8 +12,15 @@ logger.setLevel("DEBUG")
 
 
 class MediaService(AbstractService):
-    async def file_db_record(self, path: str):
-        # async with session() as db:
+    """
+    Service for db connection for Media cors
+    """
+    async def file_db_record(self, path: str) -> MediaResponse:
+        """
+        Media instance (image db info) create method
+        :param path: Path to the image file
+        :return: MediaResponse with info about image file
+        """
         async with self.session.begin():
             new_media = Media(media_url=path)
             self.session.add(new_media)
