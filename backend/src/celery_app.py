@@ -1,8 +1,12 @@
+import asyncio
+
 from celery import Celery
 from PIL import Image
 import io
 import logging.config
 from logging_conf import logs_config
+
+from database.media import update_media_path
 
 celery_app = Celery(__name__)
 celery_app.conf.broker_url = 'redis://localhost:6379'
@@ -49,3 +53,12 @@ def resize_image(path, file_bytes, size_mb=2) -> None:
     with open(path, "wb") as f:
         f.write(resized_bytes)
     logger.info(msg='File saved')
+
+
+@celery_app.task
+def reattach_new_path(image_id: int, path: str) -> None:
+    async def wrapped():
+        await update_media_path(media_id=image_id, new_path=path)
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(wrapped())

@@ -7,7 +7,7 @@ from fastapi.requests import Request
 
 from schema.media import MediaResponse
 from database.media import MediaService
-from celery_app import resize_image
+from celery_app import resize_image, reattach_new_path
 from logging_conf import logs_config
 
 
@@ -28,6 +28,7 @@ async def post_new_media_file(request: Request, service: MediaService = Depends(
     :return: Image file info db create method of Media service
     """
     user = request.state.user
+    default_path = 'images/default_kSGOVr.jpg'
     if not user:
         logger.error('Access denied')
         raise HTTPException(
@@ -41,5 +42,7 @@ async def post_new_media_file(request: Request, service: MediaService = Depends(
     filename = new.join(file.filename.rsplit('.', 1))
     path = f'images/{filename}'
     file_bytes = await file.read()
+    image = await service.file_db_record(path=default_path)
     resize_image.delay(path, file_bytes)
-    return await service.file_db_record(path=path)
+    reattach_new_path.delay(image.media_id, path)
+    return image
