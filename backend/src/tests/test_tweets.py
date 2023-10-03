@@ -5,6 +5,11 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_get_tweets(test_app):
+    """
+    Get all tweets test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {
@@ -34,6 +39,11 @@ async def test_get_tweets(test_app):
 
 @pytest.mark.asyncio
 async def test_post_tweet(test_app):
+    """
+    Post new tweet test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {
@@ -47,6 +57,11 @@ async def test_post_tweet(test_app):
 
 @pytest.mark.asyncio
 async def test_delete_tweet(test_app):
+    """
+    Tweet delete test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {"result": True}
@@ -57,6 +72,11 @@ async def test_delete_tweet(test_app):
 
 @pytest.mark.asyncio
 async def test_like_tweet(test_app):
+    """
+    Tweet like create test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {"result": True}
@@ -67,6 +87,11 @@ async def test_like_tweet(test_app):
 
 @pytest.mark.asyncio
 async def test_delete_like(test_app):
+    """
+    Tweet like delete test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {"result": True}

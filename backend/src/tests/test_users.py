@@ -5,6 +5,11 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_signup(test_app):
+    """
+    New User sign up test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     data = {"username": "mike@klike.com", "password": "strong!!!", "api_key": "test"}
@@ -14,6 +19,11 @@ async def test_signup(test_app):
 
 @pytest.mark.asyncio
 async def test_get_me(test_app):
+    """
+    Get current authenticated User test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {"result": True,
@@ -32,6 +42,11 @@ async def test_get_me(test_app):
 
 @pytest.mark.asyncio
 async def test_get_user_by_id(test_app):
+    """
+    Get user by ID test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {"result": True,
@@ -49,7 +64,12 @@ async def test_get_user_by_id(test_app):
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_id(test_app):
+async def test_follow_user(test_app):
+    """
+    Follow User test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {"result": True}
@@ -59,7 +79,12 @@ async def test_get_user_by_id(test_app):
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_id(test_app):
+async def test_unfollow_user(test_app):
+    """
+    Unfollow User test function
+    :param test_app: App instance
+    :return: None
+    """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
     expected = {"result": True}
