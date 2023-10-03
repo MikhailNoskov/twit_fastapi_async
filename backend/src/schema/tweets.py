@@ -4,6 +4,9 @@ from schema.users import UserFollower
 
 
 class TweetDisplay(BaseModel):
+    """
+    Tweet full info display schema
+    """
     id: int
     content: str
     author: UserFollower
@@ -21,6 +24,9 @@ class TweetDisplay(BaseModel):
 
 
 class TweetsList(BaseModel):
+    """
+    List of tweets schema
+    """
     result: bool = True
     tweets: List[TweetDisplay]
 
@@ -29,11 +35,17 @@ class TweetsList(BaseModel):
 
 
 class TweetCreate(BaseModel):
+    """
+    Tweet created schema
+    """
     tweet_data: str
     tweet_media_ids: Optional[List[int]]
 
 
 class TweetResponse(BaseModel):
+    """
+    Tweet response schema
+    """
     result: bool = True
     tweet_id: int
 
