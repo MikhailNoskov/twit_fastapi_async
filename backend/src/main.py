@@ -36,6 +36,12 @@ app.include_router(media_router, prefix='/api/medias')
 
 @app.middleware("http")
 async def add_user(request: Request, call_next):
+    """
+    Current User middleware
+    :param request: Request
+    :param call_next: callable
+    :return: call_next function returned
+    """
     if 'api-key' in request.headers.keys():
         api_key = request.headers.get('api-key', None)
         user = await verify_api_key(api_key=api_key)
@@ -47,11 +53,19 @@ async def add_user(request: Request, call_next):
 
 @app.get('/api/userinfo/')
 def index():
+    """
+    Userinfo endpoint
+    :return: Redirect to get current user endpoint
+    """
     return RedirectResponse(url="/api/users/me")
 
 
 @app.get("/sentry-debug")
 async def trigger_error():
+    """
+    Sentry debug endpoint
+    :return: ZeroDivisionError
+    """
     division_by_zero = 1 / 0
 
 

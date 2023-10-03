@@ -15,7 +15,14 @@ logger.setLevel("DEBUG")
 
 
 @celery_app.task
-def resize_image(path, file_bytes, size_mb=2):
+def resize_image(path, file_bytes, size_mb=2) -> None:
+    """
+    Image file resize async task
+    :param path: str
+    :param file_bytes: bytes
+    :param size_mb: File size threshold
+    :return: None
+    """
     if len(file_bytes) > 2 * 1024 * 1024:  # 2Mb
         logger.warning(msg='Big file')
         input_stream = io.BytesIO(file_bytes)
