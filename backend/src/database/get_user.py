@@ -30,9 +30,10 @@ async def verify_api_key(api_key: str):
             user = user.scalar_one_or_none()
             if not user:
                 logging.warning(msg=f"User with {api_key} api key not found")
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
-                )
+                # raise HTTPException(
+                #     status_code=status.HTTP_404_NOT_FOUND,
+                #     detail="User not found"
+                # )
+                return None
             logging.debug(msg='User retrieved')
             return user
