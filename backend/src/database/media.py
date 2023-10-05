@@ -1,12 +1,15 @@
 import logging.config
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
+from sqlalchemy import select
+
 from models.media import Media
 from schema.media import MediaResponse
 from logging_conf import logs_config
 from database.connection import async_session_maker
 from database.services import AbstractService
-from sqlalchemy import select
+from exceptions.custom_exceptions import CustomException
+
 
 logging.config.dictConfig(logs_config)
 logger = logging.getLogger("app.db_media")
@@ -33,6 +36,7 @@ class MediaService(AbstractService):
             logger.debug(msg=f'Image {path} added')
             return image
 
+
 async def update_media_path(media_id: int, new_path: str) -> None:
     """
 
@@ -45,7 +49,13 @@ async def update_media_path(media_id: int, new_path: str) -> None:
             media = await db.execute(select(Media).where(Media.id == media_id))
             media = media.scalars().first()
             if not media:
-                raise HTTPException(status_code=404, detail="Media not found")
+                error_message = "Media not found"
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type='media',
+                    error_message=error_message,
+                    response_status=status.HTTP_404_NOT_FOUND
+                )
             media.media_url = new_path
             await db.merge(media)
             await db.commit()

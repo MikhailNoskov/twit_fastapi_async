@@ -14,7 +14,7 @@ from schema.users import UserFollower
 from schema.positive import PositiveResponse
 from logging_conf import logs_config
 from database.services import AbstractService
-
+from exceptions.custom_exceptions import CustomException
 
 logging.config.dictConfig(logs_config)
 logger = logging.getLogger("app.db_tweets")
@@ -34,10 +34,12 @@ class TweetService(AbstractService):
         """
         async with self.session.begin():
             if not user:
-                logger.warning(msg='Access denied')
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Access denied"
+                error_message = 'Access denied'
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type='tweets',
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN
                 )
             new_tweet = Tweet(
                 content=data.tweet_data,
@@ -68,24 +70,29 @@ class TweetService(AbstractService):
         """
         async with self.session.begin():
             if not user:
-                logger.warning(msg='Access denied')
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Access denied"
+                error_message = 'Access denied'
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type='tweets',
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN
                 )
             tweet = await self.session.execute(select(Tweet).where(Tweet.id == tweet_id))
             tweet = tweet.scalar_one_or_none()
             if not tweet:
-                logger.warning(msg='Tweet not found')
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Tweet not found"
+                error_message = 'Tweet not found'
+                raise CustomException(
+                    error_type='tweets',
+                    error_message=error_message,
+                    response_status=status.HTTP_404_NOT_FOUND
                 )
             if user.id != tweet.author_id:
-                logger.warning(msg='Tweet can not be deleted by this user')
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You can not delete this tweet"
+                error_message = 'Tweet can not be deleted by this user'
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type='tweets',
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN
                 )
             await self.session.delete(tweet)
             logger.warning(msg='Tweet has been deleted')
@@ -100,10 +107,21 @@ class TweetService(AbstractService):
         """
         async with self.session.begin():
             if not user:
-                logger.warning(msg='Access denied')
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Access denied"
+                error_message = 'Access denied'
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type='likes',
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN
+                )
+            tweet = await self.session.execute(select(Tweet).where(Tweet.id == tweet_id))
+            tweet = tweet.scalar_one_or_none()
+            if not tweet:
+                error_message = 'Tweet not found'
+                raise CustomException(
+                    error_type='tweets',
+                    error_message=error_message,
+                    response_status=status.HTTP_404_NOT_FOUND
                 )
             like = await self.session.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
             like = like.scalar_one_or_none()
@@ -128,18 +146,22 @@ class TweetService(AbstractService):
         """
         async with self.session.begin():
             if not user:
-                logger.warning(msg='Access denied')
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Access denied"
+                error_message = 'Access denied'
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type='likes',
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN
                 )
             like = await self.session.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
             like = like.scalar_one_or_none()
             if not like:
-                logger.warning(msg='The tweet can not be unliked')
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You have not liked this tweet"
+                error_message = 'The tweet can not be unliked'
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type='tweets',
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN
                 )
             await self.session.delete(like)
             logger.debug(msg='Tweet is unliked')
@@ -153,6 +175,14 @@ class TweetService(AbstractService):
         :return: List of the Tweets which can be seen by current User
         """
         async with self.session.begin():
+            if not user:
+                error_message = 'Access denied'
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type='tweets',
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN
+                )
             tweets = await self.session.execute(select(Tweet).options(
                 selectinload(Tweet.author),  # Eagerly load Author
                 subqueryload(Tweet.likes).options(subqueryload(Like.user)),

@@ -6,7 +6,7 @@ import sentry_sdk
 from fastapi import FastAPI, Depends, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.requests import Request
 
 from database.get_user import verify_api_key
@@ -14,6 +14,7 @@ from routes.users import user_router
 from routes.tweets import tweet_router
 from routes.media import media_router
 from models.users import User
+from exceptions.custom_exceptions import CustomException
 
 sentry_sdk.init(
     dsn="https://c699f8e763ecd3e18f34cd56ed3b435c@o1075355.ingest.sentry.io/4505930641309696",
@@ -76,5 +77,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(CustomException)
+async def custom_exception_handler(request: Request, exc: CustomException) -> JSONResponse:
+    exception = exc.to_dict()
+    status_code = exception.pop('status', 404)
+    return JSONResponse(
+        status_code=status_code,
+        content=dict(**exception)
+    )
 
 app.mount('/images', StaticFiles(directory='images'), name='images')

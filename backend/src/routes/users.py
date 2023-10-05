@@ -1,13 +1,14 @@
 import logging.config
 from typing import Optional
 
-from fastapi import APIRouter, Header, Depends
+from fastapi import APIRouter, Header, Depends, status
 from fastapi.requests import Request
 
 from schema.users import UserRegister, UserResponse
 from schema.positive import PositiveResponse
 from database.users import UserService
 from logging_conf import logs_config
+from exceptions.custom_exceptions import CustomException
 
 
 logging.config.dictConfig(logs_config)
@@ -43,7 +44,7 @@ async def me(request: Request, service: UserService = Depends(), api_key: Option
     """
     logger.info(msg='Me endpoint called')
     me = request.state.user
-    result = await service.get_me(me.id)
+    result = await service.get_me(me)
     return {"result": True, "user": result}
 
 

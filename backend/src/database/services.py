@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.connection import get_session
 
 
-class AbstractService:
+class AbstractService(ABC):
     """
     Abstract service initiated with async db connection
     """

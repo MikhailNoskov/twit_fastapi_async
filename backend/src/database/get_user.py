@@ -1,24 +1,20 @@
-from typing import Optional, List
 import logging.config
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status, Header, Depends, UploadFile, File
-from models.users import User
-from database.connection import get_session
+from fastapi import APIRouter
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+
+from models.users import User
 from database.connection import async_session_maker as session
 from logging_conf import logs_config
 
-media_router = APIRouter(
-    tags=["media"]
-)
 
 logging.config.dictConfig(logs_config)
 logger = logging.getLogger("app.db_users")
 logger.setLevel("DEBUG")
 
 
-async def verify_api_key(api_key: str):
+async def verify_api_key(api_key: str) -> Optional[User]:
     """
     Api key verification function
     :param api_key: Received api key as a string
@@ -30,9 +26,6 @@ async def verify_api_key(api_key: str):
             user = user.scalar_one_or_none()
             if not user:
                 logging.warning(msg=f"User with {api_key} api key not found")
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
-                )
+                return None
             logging.debug(msg='User retrieved')
             return user
