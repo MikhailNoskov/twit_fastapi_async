@@ -7,6 +7,7 @@ import logging.config
 from logging_conf import logs_config
 
 from database.media import update_media_path
+from aws.aws_connection import s3
 
 celery_app = Celery(__name__)
 celery_app.conf.broker_url = 'redis://localhost:6379'
@@ -45,13 +46,18 @@ def resize_image(path, file_bytes, size_mb=2) -> None:
             image = image.convert('RGB')
         # Convert to lower quality JPEG
         output_stream = io.BytesIO()
-        image.save(output_stream, 'JPEG', quality=70)
-        resized_bytes = output_stream.getvalue()
-
+        # image.save(output_stream, 'JPEG', quality=70)
+        # resized_bytes = output_stream.getvalue()
+        print(s3.__dict__)
+        s3.put_object(Bucket='amigomalay', Key=path, Body=output_stream)
+        url = s3.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={'Bucket': 'amigomalay', 'Key': path})
+        print(url)
     else:
         resized_bytes = file_bytes
-    with open(path, "wb") as f:
-        f.write(resized_bytes)
+    # with open(path, "wb") as f:
+    #     f.write(resized_bytes)
     logger.info(msg='File saved')
 
 

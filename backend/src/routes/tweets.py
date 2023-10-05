@@ -21,11 +21,14 @@ logger.setLevel("DEBUG")
 async def post_new_tweet(request: Request, data: TweetCreate, service: TweetService = Depends(), api_key: Optional[str] = Header(...)):
     """
     New tweet create endpoint
-    :param request: Request
-    :param data: Tweet info received
-    :param service: Tweet db connection service instance
-    :param api_key: str
-    :return: Tweet create method of Tweet service
+    -------------------------
+    :param\n
+    request: Request\n
+    data: Tweet info received\n
+    service: Tweet db connection service instance\n
+    api_key: str\n
+    :return\n
+    Tweet create method of Tweet service
     """
     user = request.state.user
     logger.info(msg=f'User {user} tries creating a tweet')
