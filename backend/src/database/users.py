@@ -59,18 +59,14 @@ class UserService(AbstractService):
                 "message": "User successfully registered!"
             }
 
-    async def get_me(self, user_id: int) -> User:
+    async def get_me(self, me: User) -> User:
         """
         Get current authenticated user method
         :param user_id: int
         :return: User instance
         """
         async with self.session.begin():
-            user = await self.session.execute(select(User).where(User.id == user_id).options(
-             joinedload(User.followers),
-             joinedload(User.following)))
-            user = user.scalar()
-            if not user:
+            if not me:
                 error_message = "User not found"
                 logger.exception(msg=error_message)
                 raise CustomException(
@@ -78,6 +74,10 @@ class UserService(AbstractService):
                     error_message=error_message,
                     response_status=status.HTTP_404_NOT_FOUND
                 )
+            user = await self.session.execute(select(User).where(User.id == me.id).options(
+             joinedload(User.followers),
+             joinedload(User.following)))
+            user = user.scalar()
             logger.debug('User retrieved for me endpoint')
             return user
 
