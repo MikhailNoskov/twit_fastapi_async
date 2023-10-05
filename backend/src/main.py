@@ -1,30 +1,29 @@
-from typing import Optional
 import uvicorn
 import sentry_sdk
 
 
-from fastapi import FastAPI, Depends, Header
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.requests import Request
+from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.admin.site import AdminSite
+from fastapi_amis_admin.admin import admin
 
+from models.users import User
+from models.tweets import Tweet, Like
+from models.media import Media
 from database.get_user import verify_api_key
 from routes.users import user_router
 from routes.tweets import tweet_router
 from routes.media import media_router
-from models.users import User
 from exceptions.custom_exceptions import CustomException
+
 
 sentry_sdk.init(
     dsn="https://c699f8e763ecd3e18f34cd56ed3b435c@o1075355.ingest.sentry.io/4505930641309696",
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
     traces_sample_rate=1.0,
-    # Set profiles_sample_rate to 1.0 to profile 100%
-    # of sampled transactions.
-    # We recommend adjusting this value in production.
     profiles_sample_rate=1.0,
 )
 
@@ -89,3 +88,42 @@ async def custom_exception_handler(request: Request, exc: CustomException) -> JS
     )
 
 app.mount('/images', StaticFiles(directory='images'), name='images')
+
+site = AdminSite(
+    settings=Settings(
+        version='1.0.0',
+        site_title='Twitter',
+        language="en_US",
+        amis_theme="antd",
+        database_url_async='postgresql+asyncpg://postgres:postgres@localhost:5432/twitter'
+    )
+)
+
+
+# Admin models added
+@site.register_admin
+class UserAdmin(admin.ModelAdmin):
+    page_schema = 'User'
+    model = User
+
+
+@site.register_admin
+class TweetAdmin(admin.ModelAdmin):
+    page_schema = 'Tweet'
+    model = Tweet
+
+
+@site.register_admin
+class LikeAdmin(admin.ModelAdmin):
+    page_schema = 'Like'
+    model = Like
+
+
+@site.register_admin
+class ImageAdmin(admin.ModelAdmin):
+    page_schema = 'Image'
+    model = Media
+
+
+# Admin site mounted
+site.mount_app(app)
