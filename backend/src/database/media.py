@@ -16,7 +16,6 @@ logger = logging.getLogger("app.db_media")
 logger.setLevel("DEBUG")
 
 
-
 class MediaService(AbstractService):
     """
     Service for db connection for Media cors

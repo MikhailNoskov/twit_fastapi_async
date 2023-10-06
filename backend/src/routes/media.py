@@ -43,6 +43,7 @@ async def post_new_media_file(request: Request, service: MediaService = Depends(
     path = f'images/{filename}'
     file_bytes = await file.read()
     image = await service.file_db_record(path=default_path)
-    resize_image.delay(path, file_bytes)
-    reattach_new_path.delay(image.media_id, path)
+    resize_image.delay(filename, path, file_bytes)
+    new_path = 'https://amigomalay.s3.eu-north-1.amazonaws.com/' + filename
+    reattach_new_path.delay(image.media_id, new_path)
     return image

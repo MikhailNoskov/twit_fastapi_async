@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from celery import Celery
 from PIL import Image
@@ -7,6 +8,7 @@ import logging.config
 from logging_conf import logs_config
 
 from database.media import update_media_path
+from aws.aws_connection import s3
 
 celery_app = Celery(__name__)
 celery_app.conf.broker_url = 'redis://localhost:6379'
@@ -19,9 +21,10 @@ logger.setLevel("DEBUG")
 
 
 @celery_app.task
-def resize_image(path, file_bytes, size_mb=2) -> None:
+def resize_image(name, path, file_bytes, size_mb=2) -> None:
     """
     Image file resize async task
+    :param name: str
     :param path: str
     :param file_bytes: bytes
     :param size_mb: File size threshold
@@ -47,12 +50,17 @@ def resize_image(path, file_bytes, size_mb=2) -> None:
         output_stream = io.BytesIO()
         image.save(output_stream, 'JPEG', quality=70)
         resized_bytes = output_stream.getvalue()
-
     else:
         resized_bytes = file_bytes
     with open(path, "wb") as f:
         f.write(resized_bytes)
+    s3.upload_file(path, 'amigomalay', name)
+    # url = s3.generate_presigned_url(
+    #     ClientMethod='get_object',
+    #     Params={'Bucket': 'amigomalay', 'Key': path})
     logger.info(msg='File saved')
+    os.remove(path)
+    logger.info(msg='Temporary file removed')
 
 
 @celery_app.task
