@@ -9,10 +9,14 @@ from logging_conf import logs_config
 
 from database.media import update_media_path
 from aws.aws_connection import s3
+from settings import settings
+
+REDIS_HOST = settings.REDIS_HOST
+REDIS_PORT = settings.REDIS_PORT
 
 celery_app = Celery(__name__)
-celery_app.conf.broker_url = 'redis://localhost:6379'
-celery_app.conf.result_backend = 'redis://localhost:6379'
+celery_app.conf.broker_url = f'redis://{REDIS_HOST}:{REDIS_PORT}'
+celery_app.conf.result_backend = f'redis://{REDIS_HOST}:{REDIS_PORT}'
 
 
 logging.config.dictConfig(logs_config)

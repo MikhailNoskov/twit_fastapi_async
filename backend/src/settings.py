@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     DB_PORT: Optional[int] = None
     DB_NAME: Optional[str] = None
     TEST_DB_NAME: Optional[str] = None
+    REDIS_HOST: Optional[str] = None
+    REDIS_PORT: Optional[int] = None
 
     class Config:
         env_file = ".env"
