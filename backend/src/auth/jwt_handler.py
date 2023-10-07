@@ -2,9 +2,7 @@ import time
 from datetime import datetime
 from fastapi import HTTPException, status
 from jose import jwt, JWTError
-from database.connection import Settings
-
-settings = Settings()
+from settings import settings
 
 
 def create_access_token(user: str) -> str:

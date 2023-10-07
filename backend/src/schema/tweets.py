@@ -10,7 +10,7 @@ class TweetDisplay(BaseModel):
     id: int
     content: str
     author: UserFollower
-    likes: Optional[List[UserFollower]]
+    likes: List[UserFollower] = []
     attachments: List[str] = []
 
     class Config:
