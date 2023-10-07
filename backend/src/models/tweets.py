@@ -31,7 +31,7 @@ class Like(Base):
     __tablename__ = "likes"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(ForeignKey("users.id"))
-    tweet_id = Column(ForeignKey("tweets.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    tweet_id = Column(Integer, ForeignKey("tweets.id"))
     user = relationship(User, back_populates="likes")
     tweet = relationship("Tweet", back_populates="likes")

@@ -40,8 +40,8 @@ async def add_user(request: Request, call_next):
     :param call_next: callable
     :return: call_next function returned
     """
-    if 'api-key' in request.headers.keys():
-        api_key = request.headers.get('api-key', None)
+    api_key = request.headers.get('api-key', None)
+    if api_key:
         user = await verify_api_key(api_key=api_key)
         request.state.user = user
     else:
