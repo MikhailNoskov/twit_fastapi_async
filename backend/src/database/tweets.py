@@ -1,9 +1,9 @@
 from typing import Optional
 import logging.config
 
-from fastapi import status, Depends, Header
+from fastapi import status, Header
 from sqlalchemy import select, update
-from sqlalchemy.orm import joinedload, selectinload, subqueryload, aliased
+from sqlalchemy.orm import selectinload, subqueryload
 
 
 from models.tweets import Tweet, Like

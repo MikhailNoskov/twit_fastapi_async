@@ -49,8 +49,8 @@ class UserForResponse(BaseModel):
     """
     id: int
     name: str
-    followers: List[UserFollower] = None
-    following: List[UserFollowing] = None
+    followers: List[UserFollower] = []
+    following: List[UserFollowing] = []
 
     class Config:
         orm_mode = True

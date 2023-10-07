@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload
 
 
 from models.users import User, users_connections
-from schema.users import UserRegister, UserFollowing, UserFollower
+from schema.users import UserRegister
 from schema.positive import PositiveResponse
 from logging_conf import logs_config
 from database.services import AbstractService

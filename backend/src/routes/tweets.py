@@ -1,11 +1,10 @@
 import logging.config
-from typing import Optional, List
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status, Header, Depends
+from fastapi import APIRouter, Header, Depends
 from fastapi.requests import Request
 
-from schema.tweets import TweetDisplay, TweetsList, TweetCreate, TweetResponse
-from schema.positive import PositiveResponse
+from schema.tweets import TweetsList, TweetCreate, TweetResponse
 from database.tweets import TweetService
 from logging_conf import logs_config
 
@@ -22,7 +21,7 @@ async def post_new_tweet(
         request: Request,
         data: TweetCreate,
         service: TweetService = Depends(),
-        api_key: Optional[str] = Header(...)
+        api_key: Optional[str] = Header(None)
 ):
     """
     New tweet create endpoint
@@ -45,7 +44,7 @@ async def delete_tweet(
         request: Request,
         tweet_id: int,
         service: TweetService = Depends(),
-        api_key: Optional[str] = Header(...)
+        api_key: Optional[str] = Header(None)
 ):
     """
     Tweet delete endpoint
@@ -65,7 +64,7 @@ async def like_tweet(
         request: Request,
         tweet_id: int,
         service: TweetService = Depends(),
-        api_key: Optional[str] = Header(...)
+        api_key: Optional[str] = Header(None)
 ):
     """
     Like tweet enpoint
@@ -85,7 +84,7 @@ async def unlike_tweet(
         request: Request,
         tweet_id: int,
         service: TweetService = Depends(),
-        api_key: Optional[str] = Header(...)
+        api_key: Optional[str] = Header(None)
 ):
     """
     Unlike tweet enpoint
@@ -101,7 +100,7 @@ async def unlike_tweet(
 
 
 @tweet_router.get('/', response_model=TweetsList)
-async def get_tweets(request: Request, service: TweetService = Depends(), api_key: Optional[str] = Header(...)):
+async def get_tweets(request: Request, service: TweetService = Depends(), api_key: Optional[str] = Header(None)):
     """
     Get all tweets enpoint
     :param request: Request
