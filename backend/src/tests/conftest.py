@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 
-from sqlalchemy_utils import create_database, drop_database
+from sqlalchemy_utils import drop_database
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from main import app
@@ -65,8 +65,8 @@ async def test_app(test_session):
     return app
 
 
-# @pytest.fixture(scope='session', autouse=True)
-# async def cleanup(test_engine):
-#     # Clear tables after each test
-#     yield
-#     drop_database(test_engine.sync_engine.url)
+@pytest.fixture(scope='session', autouse=True)
+async def cleanup(test_engine):
+    # Clear tables after each test
+    yield
+    drop_database(test_engine.sync_engine.url)

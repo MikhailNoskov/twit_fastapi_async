@@ -18,7 +18,12 @@ logger.setLevel("DEBUG")
 
 
 @tweet_router.post('/', response_model=TweetResponse)
-async def post_new_tweet(request: Request, data: TweetCreate, service: TweetService = Depends(), api_key: Optional[str] = Header(...)):
+async def post_new_tweet(
+        request: Request,
+        data: TweetCreate,
+        service: TweetService = Depends(),
+        api_key: Optional[str] = Header(...)
+):
     """
     New tweet create endpoint
     -------------------------
@@ -36,7 +41,12 @@ async def post_new_tweet(request: Request, data: TweetCreate, service: TweetServ
 
 
 @tweet_router.delete('/{tweet_id}')
-async def delete_tweet(request: Request, tweet_id: int, service: TweetService = Depends(), api_key: Optional[str] = Header(...)):
+async def delete_tweet(
+        request: Request,
+        tweet_id: int,
+        service: TweetService = Depends(),
+        api_key: Optional[str] = Header(...)
+):
     """
     Tweet delete endpoint
     :param request: Request
@@ -51,7 +61,12 @@ async def delete_tweet(request: Request, tweet_id: int, service: TweetService = 
 
 
 @tweet_router.post('/{tweet_id}/likes')
-async def like_tweet(request: Request, tweet_id: int, service: TweetService = Depends(), api_key: Optional[str] = Header(...)):
+async def like_tweet(
+        request: Request,
+        tweet_id: int,
+        service: TweetService = Depends(),
+        api_key: Optional[str] = Header(...)
+):
     """
     Like tweet enpoint
     :param request: Request
@@ -66,7 +81,12 @@ async def like_tweet(request: Request, tweet_id: int, service: TweetService = De
 
 
 @tweet_router.delete('/{tweet_id}/likes')
-async def unlike_tweet(request: Request, tweet_id: int, service: TweetService = Depends(), api_key: Optional[str] = Header(...)):
+async def unlike_tweet(
+        request: Request,
+        tweet_id: int,
+        service: TweetService = Depends(),
+        api_key: Optional[str] = Header(...)
+):
     """
     Unlike tweet enpoint
     :param request: Request

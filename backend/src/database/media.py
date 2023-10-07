@@ -1,6 +1,6 @@
 import logging.config
 
-from fastapi import HTTPException, status
+from fastapi import status
 from sqlalchemy import select
 
 from models.media import Media

@@ -1,6 +1,4 @@
-import uvicorn
 import sentry_sdk
-
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -66,7 +64,7 @@ async def trigger_error():
     Sentry debug endpoint
     :return: ZeroDivisionError
     """
-    division_by_zero = 1 / 0
+    return 1 / 0
 
 
 app.add_middleware(

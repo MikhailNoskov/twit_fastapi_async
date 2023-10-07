@@ -1,7 +1,6 @@
 import logging.config
 from typing import Optional
 
-from fastapi import APIRouter
 from sqlalchemy import select
 
 from models.users import User

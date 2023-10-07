@@ -1,6 +1,6 @@
 import logging.config
 
-from fastapi import HTTPException, status, Depends, Header
+from fastapi import status
 from sqlalchemy import select, insert, column, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
