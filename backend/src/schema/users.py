@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from pydantic import BaseModel
+from typing import List
 
 
 class UserRegister(BaseModel):
@@ -49,8 +49,8 @@ class UserForResponse(BaseModel):
     """
     id: int
     name: str
-    followers: List[UserFollower] = None
-    following: List[UserFollowing] = None
+    followers: List[UserFollower] = []
+    following: List[UserFollowing] = []
 
     class Config:
         orm_mode = True

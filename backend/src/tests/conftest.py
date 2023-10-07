@@ -1,11 +1,12 @@
 import pytest
 import asyncio
 
-from sqlalchemy_utils import create_database, drop_database
+from sqlalchemy_utils import drop_database
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from main import app
 from database.connection import Base, get_session
+from settings import settings
 
 
 @pytest.fixture(scope="session")
@@ -25,7 +26,13 @@ async def test_session():
     Test db session connection generator
     :return: Yields async connection to blank db
     """
-    db_url = "postgresql+asyncpg://postgres:postgres@localhost/testdb"
+    db_user = settings.DB_USER
+    db_password = settings.DB_PASSWORD
+    host = settings.DB_HOST
+    port = settings.DB_PORT
+    db_name = settings.TEST_DB_NAME
+
+    db_url = f"postgresql+asyncpg://{db_user}:{db_password}@{host}:{port}/{db_name}"
     engine = create_async_engine(db_url, echo=True)
     async_session_maker = async_sessionmaker(
         bind=engine,
@@ -58,8 +65,8 @@ async def test_app(test_session):
     return app
 
 
-# @pytest.fixture(scope='session', autouse=True)
-# async def cleanup(test_engine):
-#     # Clear tables after each test
-#     yield
-#     drop_database(test_engine.sync_engine.url)
+@pytest.fixture(scope='session', autouse=True)
+async def cleanup(test_engine):
+    # Clear tables after each test
+    yield
+    drop_database(test_engine.sync_engine.url)

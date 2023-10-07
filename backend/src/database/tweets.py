@@ -1,9 +1,9 @@
 from typing import Optional
 import logging.config
 
-from fastapi import HTTPException, status, Depends, Header
+from fastapi import status, Header
 from sqlalchemy import select, update
-from sqlalchemy.orm import joinedload, selectinload, subqueryload, aliased
+from sqlalchemy.orm import selectinload, subqueryload
 
 
 from models.tweets import Tweet, Like
@@ -123,7 +123,11 @@ class TweetService(AbstractService):
                     error_message=error_message,
                     response_status=status.HTTP_404_NOT_FOUND
                 )
-            like = await self.session.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
+            like = await self.session.execute(
+                select(Like).where(
+                    Like.user_id == user.id, Like.tweet_id == tweet_id
+                )
+            )
             like = like.scalar_one_or_none()
             if like:
                 logger.debug(msg='Redirected to dislike tweet')
@@ -153,7 +157,11 @@ class TweetService(AbstractService):
                     error_message=error_message,
                     response_status=status.HTTP_403_FORBIDDEN
                 )
-            like = await self.session.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
+            like = await self.session.execute(
+                select(Like).where(
+                    Like.user_id == user.id, Like.tweet_id == tweet_id
+                )
+            )
             like = like.scalar_one_or_none()
             if not like:
                 error_message = 'The tweet can not be unliked'

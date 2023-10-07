@@ -1,8 +1,6 @@
-from pydantic import BaseModel
-from typing import Optional, List
 from database.connection import Base
 from sqlalchemy import Column, Integer, String, Table, ForeignKey, Index
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 users_connections = Table('users_connections', Base.metadata,
                           Column('follower_id', Integer, ForeignKey('users.id')),
