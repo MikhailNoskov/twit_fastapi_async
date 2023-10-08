@@ -9,7 +9,6 @@ from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.admin.site import AdminSite
 from fastapi_amis_admin.admin import admin
 from fastapi.security.api_key import APIKeyHeader
-from starlette_session import SessionMiddleware
 
 from auth.authenticate import authenticate
 from models.users import User
@@ -47,6 +46,10 @@ async def add_user(request: Request, call_next):
     api_key = request.headers.get(API_KEY.model.name, None)
     if api_key:
         user = await verify_api_key(api_key=api_key)
+        request.state.user = user
+    elif 'Authorization' in request.headers:
+        token = request.headers['Authorization'].split(" ")[1]
+        user = await authenticate(token)
         request.state.user = user
     else:
         request.state.user = None

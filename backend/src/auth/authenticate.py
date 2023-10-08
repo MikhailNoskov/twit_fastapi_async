@@ -4,11 +4,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from .jwt_handler import verify_access_token
+from database.get_user import get_user_by_name
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/signin")
 
 
-def authenticate(
+async def authenticate(
         token: str = Depends(oauth2_scheme)) -> Optional[str]:
     """
     Token verification function
@@ -22,4 +23,4 @@ def authenticate(
         # )
         return None
     decoded_token = verify_access_token(token)
-    return decoded_token["user"]
+    return await get_user_by_name(decoded_token["user"])
