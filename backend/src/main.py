@@ -1,6 +1,6 @@
 import sentry_sdk
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -8,7 +8,10 @@ from fastapi.requests import Request
 from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.admin.site import AdminSite
 from fastapi_amis_admin.admin import admin
+from fastapi.security.api_key import APIKeyHeader
+from starlette_session import SessionMiddleware
 
+from auth.authenticate import authenticate
 from models.users import User
 from models.tweets import Tweet, Like
 from models.media import Media
@@ -25,6 +28,7 @@ sentry_sdk.init(
     profiles_sample_rate=1.0,
 )
 
+API_KEY = APIKeyHeader(name="api-key", auto_error=False)
 app = FastAPI()
 
 app.include_router(user_router, prefix='/api/users')
@@ -40,7 +44,7 @@ async def add_user(request: Request, call_next):
     :param call_next: callable
     :return: call_next function returned
     """
-    api_key = request.headers.get('api-key', None)
+    api_key = request.headers.get(API_KEY.model.name, None)
     if api_key:
         user = await verify_api_key(api_key=api_key)
         request.state.user = user
@@ -50,7 +54,7 @@ async def add_user(request: Request, call_next):
 
 
 @app.get('/api/userinfo/')
-def index():
+def index(user: str = Depends(authenticate)):
     """
     Userinfo endpoint
     :return: Redirect to get current user endpoint

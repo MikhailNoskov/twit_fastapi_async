@@ -1,11 +1,13 @@
 import logging.config
 from typing import Optional
 
-from fastapi import APIRouter, Header, Depends
+from fastapi import APIRouter
 from fastapi.requests import Request
+from fastapi import Depends, Header
+from fastapi.security import OAuth2PasswordRequestForm
 
 from schema.users import UserRegister, UserResponse
-from schema.positive import PositiveResponse
+from schema.positive import PositiveResponse, TokenResponse
 from database.users import UserService
 from logging_conf import logs_config
 
@@ -30,6 +32,14 @@ async def sign_new_user(data: UserRegister, service: UserService = Depends()) ->
     """
     logger.debug(msg='Trying register new user')
     return await service.create_user(data=data)
+
+
+@user_router.post('/signin', response_model=TokenResponse)
+async def sign_user_in(
+        user: OAuth2PasswordRequestForm = Depends(),
+        service: UserService = Depends()
+) -> TokenResponse:
+    return await service.sign_in(user)
 
 
 @user_router.get('/me', response_model=UserResponse)

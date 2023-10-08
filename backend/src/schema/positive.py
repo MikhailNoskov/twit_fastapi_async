@@ -9,3 +9,8 @@ class PositiveResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
