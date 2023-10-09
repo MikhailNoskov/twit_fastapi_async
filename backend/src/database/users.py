@@ -1,17 +1,18 @@
 import logging.config
 
-from fastapi import status
+from fastapi import status, HTTPException
 from sqlalchemy import select, insert, column, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
-
+from auth.hash_password import HashPassword
 from models.users import User, users_connections
 from schema.users import UserRegister
 from schema.positive import PositiveResponse
 from logging_conf import logs_config
 from database.services import AbstractService
 from exceptions.custom_exceptions import CustomException
+from auth.jwt_handler import create_access_token
 
 
 logging.config.dictConfig(logs_config)
@@ -50,7 +51,8 @@ class UserService(AbstractService):
                     error_message=error_message,
                     response_status=status.HTTP_409_CONFLICT
                 )
-            user = User(name=data.username, password=data.password, api_key=data.api_key)
+            hashed_password = HashPassword.create_hash(data.password)
+            user = User(name=data.username, password=hashed_password, api_key=data.api_key)
             self.session.add(user)
             await self.session.flush()
             await self.session.refresh(user)
@@ -59,10 +61,36 @@ class UserService(AbstractService):
                 "message": "User successfully registered!"
             }
 
+    async def sign_in(self, user: User) -> dict:
+        """
+        Sign In User method
+        :param user: User info received
+        :return: User create confirmation
+        """
+        async with self.session.begin():
+            req = select(User).where(User.name == user.username)
+            result = await self.session.execute(req)
+            db_user = result.scalar_one_or_none()
+            if not db_user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User does not exist"
+                )
+            if HashPassword().verify_hash(user.password, db_user.password):
+                access_token = create_access_token(db_user.name)
+                return {
+                    "access_token": access_token,
+                    "token_type": "Bearer"
+                }
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Wrong credentials passed"
+            )
+
     async def get_me(self, me: User) -> User:
         """
         Get current authenticated user method
-        :param user_id: int
+        :param me: User instance me
         :return: User instance
         """
         async with self.session.begin():

@@ -7,7 +7,7 @@ from fastapi.requests import Request
 from schema.tweets import TweetsList, TweetCreate, TweetResponse
 from database.tweets import TweetService
 from logging_conf import logs_config
-
+from auth.authenticate import authenticate
 
 tweet_router = APIRouter(tags=["tweets"])
 
@@ -100,7 +100,12 @@ async def unlike_tweet(
 
 
 @tweet_router.get('/', response_model=TweetsList)
-async def get_tweets(request: Request, service: TweetService = Depends(), api_key: Optional[str] = Header(None)):
+async def get_tweets(
+        request: Request,
+        service: TweetService = Depends(),
+        api_key: Optional[str] = Header(None),
+        # authed = Depends(authenticate)
+):
     """
     Get all tweets enpoint
     :param request: Request

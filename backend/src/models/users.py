@@ -16,7 +16,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), nullable=False)
-    password = Column(String(50), nullable=False)
+    password = Column(String(255), nullable=False)
     api_key = Column(String(50), nullable=True)
     tweets = relationship('Tweet', back_populates='author', cascade="all, delete")
 

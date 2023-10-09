@@ -28,3 +28,20 @@ async def verify_api_key(api_key: str) -> Optional[User]:
                 return None
             logging.debug(msg='User retrieved')
             return user
+
+
+async def get_user_by_name(name: str) -> Optional[User]:
+    """
+    Api key verification function
+    :param api_key: Received api key as a string
+    :return: User instance found by api key
+    """
+    async with session() as db:
+        async with db.begin():
+            user = await db.execute(select(User).where(User.name == name))
+            user = user.scalar_one_or_none()
+            if not user:
+                logging.warning(msg=f"User with {name} api key not found")
+                return None
+            logging.debug(msg='User retrieved')
+            return user
