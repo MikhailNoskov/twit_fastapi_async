@@ -7,7 +7,6 @@ from fastapi.requests import Request
 from schema.tweets import TweetsList, TweetCreate, TweetResponse
 from database.tweets import TweetService
 from logging_conf import logs_config
-from auth.authenticate import authenticate
 
 tweet_router = APIRouter(tags=["tweets"])
 

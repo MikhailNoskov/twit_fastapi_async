@@ -1,6 +1,3 @@
-from fastapi import status
-
-
 class CustomException(Exception):
     def __init__(self, error_type: str, error_message: str, response_status: int):
         self.result = False
