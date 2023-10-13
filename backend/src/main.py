@@ -19,6 +19,7 @@ from routes.users import user_router
 from routes.tweets import tweet_router
 from routes.media import media_router
 from exceptions.custom_exceptions import CustomException
+from settings import settings
 
 
 sentry_sdk.init(
@@ -100,7 +101,7 @@ site = AdminSite(
         site_title='Twitter',
         language="en_US",
         amis_theme="antd",
-        database_url_async='postgresql+asyncpg://postgres:postgres@localhost:5432/twitter'
+        database_url_async=f'postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}'
     )
 )
 

@@ -3,26 +3,34 @@ services:
   db:
     image: postgres:12
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
     container_name: db
+    ports:
+      - 5678:5432
     networks:
-      - network
+      - mike
 
   backend:
     build: ./backend/src
     image: backend
     container_name: backend
+    restart: always
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@0.0.0.0:${DB_PORT}/twitter
-    command: |
-      /bin/sh -c "alembic upgrade head"
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:${DB_PORT}/twitter
+    command: bash -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0"
+    ports:
+      - "8000:8000"
     depends_on:
       - db
       - redis
     networks:
-      - network
+      - mike
 
   frontend:
     image: nginx:alpine
@@ -33,11 +41,13 @@ services:
       - backend
     container_name: frontend
     networks:
-      - network
+      - mike
 
   redis:
     image: redis:alpine
     container_name: redis
+    networks:
+      - mike
 
   worker:
     build: ./backend/src
@@ -46,7 +56,9 @@ services:
       - backend
       - redis
     container_name: worker
+    networks:
+      - mike
 
 networks:
-  network:
+  mike:
     driver: bridge

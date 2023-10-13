@@ -1,8 +1,9 @@
 import string
 import random
 import logging.config
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status, UploadFile, File, Depends
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, Depends, Header
 from fastapi.requests import Request
 
 from schema.media import MediaResponse
@@ -19,9 +20,15 @@ logger.setLevel("DEBUG")
 
 
 @media_router.post('/', response_model=MediaResponse)
-async def post_new_media_file(request: Request, service: MediaService = Depends(), file: UploadFile = File(...)):
+async def post_new_media_file(
+        request: Request,
+        service: MediaService = Depends(),
+        file: UploadFile = File(...),
+        api_key: Optional[str] = Header(None)
+):
     """
     Image file save endpoint
+    :param api_key: str
     :param request: Request
     :param service: Media db connect service instance
     :param file: Uploaded file
