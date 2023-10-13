@@ -31,9 +31,9 @@ sentry_sdk.init(
 API_KEY = APIKeyHeader(name="api-key", auto_error=False)
 app = FastAPI()
 
-app.include_router(user_router, prefix='/api/users')
-app.include_router(tweet_router, prefix='/api/tweets')
-app.include_router(media_router, prefix='/api/medias')
+app.include_router(user_router, prefix="/api/users")
+app.include_router(tweet_router, prefix="/api/tweets")
+app.include_router(media_router, prefix="/api/medias")
 
 
 @app.middleware("http")
@@ -48,8 +48,8 @@ async def add_user(request: Request, call_next):
     if api_key:
         user = await verify_api_key(api_key=api_key)
         request.state.user = user
-    elif 'Authorization' in request.headers:
-        token = request.headers['Authorization'].split(" ")[1]
+    elif "Authorization" in request.headers:
+        token = request.headers["Authorization"].split(" ")[1]
         user = await authenticate(token)
         request.state.user = user
     else:
@@ -57,7 +57,7 @@ async def add_user(request: Request, call_next):
     return await call_next(request)
 
 
-@app.get('/api/userinfo/')
+@app.get("/api/userinfo/")
 def index(user: str = Depends(authenticate)):
     """
     Userinfo endpoint
@@ -77,7 +77,7 @@ async def trigger_error():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -87,21 +87,19 @@ app.add_middleware(
 @app.exception_handler(CustomException)
 async def custom_exception_handler(request: Request, exc: CustomException) -> JSONResponse:
     exception = exc.to_dict()
-    status_code = exception.pop('status', 404)
-    return JSONResponse(
-        status_code=status_code,
-        content=dict(**exception)
-    )
+    status_code = exception.pop("status", 404)
+    return JSONResponse(status_code=status_code, content=dict(**exception))
 
-app.mount('/images', StaticFiles(directory='images'), name='images')
+
+app.mount("/images", StaticFiles(directory="images"), name="images")
 
 site = AdminSite(
     settings=Settings(
-        version='1.0.0',
-        site_title='Twitter',
+        version="1.0.0",
+        site_title="Twitter",
         language="en_US",
         amis_theme="antd",
-        database_url_async=f'postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}'
+        database_url_async=f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}",
     )
 )
 
@@ -109,25 +107,25 @@ site = AdminSite(
 # Admin models added
 @site.register_admin
 class UserAdmin(admin.ModelAdmin):
-    page_schema = 'User'
+    page_schema = "User"
     model = User
 
 
 @site.register_admin
 class TweetAdmin(admin.ModelAdmin):
-    page_schema = 'Tweet'
+    page_schema = "Tweet"
     model = Tweet
 
 
 @site.register_admin
 class LikeAdmin(admin.ModelAdmin):
-    page_schema = 'Like'
+    page_schema = "Like"
     model = Like
 
 
 @site.register_admin
 class ImageAdmin(admin.ModelAdmin):
-    page_schema = 'Image'
+    page_schema = "Image"
     model = Media
 
 

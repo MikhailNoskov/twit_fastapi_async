@@ -26,6 +26,7 @@ from models.users import User as UserBase
 from models.media import Media as MediaBase
 
 from database.connection import Base
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

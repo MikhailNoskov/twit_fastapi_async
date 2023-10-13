@@ -13,5 +13,5 @@ class CustomException(Exception):
             "status": self.status,
             "result": self.result,
             "error_type": self.error_type,
-            "error_message": self.error_message
+            "error_message": self.error_message,
         }

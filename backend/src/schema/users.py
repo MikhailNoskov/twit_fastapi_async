@@ -6,6 +6,7 @@ class UserRegister(BaseModel):
     """
     User register schema
     """
+
     username: str
     password: str
     api_key: str
@@ -16,7 +17,7 @@ class UserRegister(BaseModel):
             "example": {
                 "username": "mike@klike.com",
                 "password": "strong!!!",
-                "api_key": "test"
+                "api_key": "test",
             }
         }
 
@@ -25,6 +26,7 @@ class UserFollower(BaseModel):
     """
     User follower schema
     """
+
     id: int
     name: str
 
@@ -36,6 +38,7 @@ class UserFollowing(BaseModel):
     """
     Followed User schema
     """
+
     id: int
     name: str
 
@@ -47,6 +50,7 @@ class UserForResponse(BaseModel):
     """
     User response schema
     """
+
     id: int
     name: str
     followers: List[UserFollower] = []
@@ -60,6 +64,7 @@ class UserResponse(BaseModel):
     """
     User response with result schema
     """
+
     result: bool
     user: UserForResponse
 

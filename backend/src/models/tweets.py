@@ -9,12 +9,13 @@ class Tweet(Base):
     """
     Tweet model
     """
-    __tablename__ = 'tweets'
+
+    __tablename__ = "tweets"
 
     id = Column(Integer, primary_key=True, index=True)
     content = Column(String(500), nullable=False)
-    author_id = Column(Integer, ForeignKey('users.id'))
-    author = relationship(User, back_populates='tweets')
+    author_id = Column(Integer, ForeignKey("users.id"))
+    author = relationship(User, back_populates="tweets")
     likes = relationship("Like", back_populates="tweet", cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -28,6 +29,7 @@ class Like(Base):
     """
     Like model
     """
+
     __tablename__ = "likes"
 
     id = Column(Integer, primary_key=True, index=True)

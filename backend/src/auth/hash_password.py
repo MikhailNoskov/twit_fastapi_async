@@ -7,6 +7,7 @@ class HashPassword:
     """
     Class for creating hash of the password and verifying plain password with hash stored
     """
+
     @classmethod
     def create_hash(cls, password: str) -> str:
         """

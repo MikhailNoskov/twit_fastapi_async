@@ -34,11 +34,7 @@ async def test_session():
 
     db_url = f"postgresql+asyncpg://{db_user}:{db_password}@{host}:{port}/{db_name}"
     engine = create_async_engine(db_url, echo=True)
-    async_session_maker = async_sessionmaker(
-        bind=engine,
-        class_=AsyncSession,
-        expire_on_commit=False
-    )
+    async_session_maker = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
     async def init_db() -> None:
         async with engine.begin() as conn:
@@ -50,13 +46,14 @@ async def test_session():
         yield session
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 async def test_app(test_session):
     """
     Get test application function
     :param test_session: async db session
     :return: Test app instance
     """
+
     async def get_test_session():
         session = await test_session.__anext__()
         return session
@@ -65,7 +62,7 @@ async def test_app(test_session):
     return app
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 async def cleanup(test_engine):
     # Clear tables after each test
     yield
