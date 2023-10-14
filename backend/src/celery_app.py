@@ -15,8 +15,8 @@ REDIS_HOST = settings.REDIS_HOST
 REDIS_PORT = settings.REDIS_PORT
 
 celery_app = Celery(__name__)
-celery_app.conf.broker_url = f'redis://{REDIS_HOST}:{REDIS_PORT}'
-celery_app.conf.result_backend = f'redis://{REDIS_HOST}:{REDIS_PORT}'
+celery_app.conf.broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+celery_app.conf.result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 
 
 logging.config.dictConfig(logs_config)
@@ -35,7 +35,7 @@ def resize_image(name, path, file_bytes, size_mb=2) -> None:
     :return: None
     """
     if len(file_bytes) > 2 * 1024 * 1024:  # 2Mb
-        logger.warning(msg='Big file')
+        logger.warning(msg="Big file")
         input_stream = io.BytesIO(file_bytes)
         image = Image.open(input_stream)
 
@@ -47,24 +47,21 @@ def resize_image(name, path, file_bytes, size_mb=2) -> None:
         image = image.resize((new_width, new_height))
 
         # Convert to RGB if needed
-        if image.mode != 'RGB':
-            logger.debug(msg='Schema is not RGB')
-            image = image.convert('RGB')
+        if image.mode != "RGB":
+            logger.debug(msg="Schema is not RGB")
+            image = image.convert("RGB")
         # Convert to lower quality JPEG
         output_stream = io.BytesIO()
-        image.save(output_stream, 'JPEG', quality=70)
+        image.save(output_stream, "JPEG", quality=70)
         resized_bytes = output_stream.getvalue()
     else:
         resized_bytes = file_bytes
     with open(path, "wb") as f:
         f.write(resized_bytes)
-    s3.upload_file(path, 'amigomalay', name)
-    # url = s3.generate_presigned_url(
-    #     ClientMethod='get_object',
-    #     Params={'Bucket': 'amigomalay', 'Key': path})
-    logger.info(msg='File saved')
+    s3.upload_file(path, "amigomalay", name)
+    logger.info(msg="File saved")
     os.remove(path)
-    logger.info(msg='Temporary file removed')
+    logger.info(msg="Temporary file removed")
 
 
 @celery_app.task

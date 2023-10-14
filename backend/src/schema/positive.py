@@ -5,6 +5,7 @@ class PositiveResponse(BaseModel):
     """
     Positive response schema
     """
+
     result: bool
 
     class Config:

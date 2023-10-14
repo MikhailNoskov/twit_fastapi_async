@@ -26,13 +26,14 @@ async def verify_api_key(api_key: str) -> Optional[User]:
             if not user:
                 logging.warning(msg=f"User with {api_key} api key not found")
                 return None
-            logging.debug(msg='User retrieved')
+            logging.debug(msg="User retrieved")
             return user
 
 
 async def get_user_by_name(name: str) -> Optional[User]:
     """
     Api key verification function
+    :param name: str Name of the user
     :param api_key: Received api key as a string
     :return: User instance found by api key
     """
@@ -43,5 +44,5 @@ async def get_user_by_name(name: str) -> Optional[User]:
             if not user:
                 logging.warning(msg=f"User with {name} api key not found")
                 return None
-            logging.debug(msg='User retrieved')
+            logging.debug(msg="User retrieved")
             return user

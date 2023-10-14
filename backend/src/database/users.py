@@ -24,6 +24,7 @@ class UserService(AbstractService):
     """
     Service for db connection for User cors
     """
+
     async def create_user(self, data: UserRegister) -> dict:
         """
         Create new User method
@@ -37,9 +38,9 @@ class UserService(AbstractService):
                 error_message = "User with supplied username exists"
                 logger.exception(msg=error_message)
                 raise CustomException(
-                    error_type='users',
+                    error_type="users",
                     error_message=error_message,
-                    response_status=status.HTTP_409_CONFLICT
+                    response_status=status.HTTP_409_CONFLICT,
                 )
             user = await self.session.execute(select(User).where(User.api_key == data.api_key))
             user = user.scalar_one_or_none()
@@ -47,9 +48,9 @@ class UserService(AbstractService):
                 error_message = "User with supplied api_key exists"
                 logger.exception(msg=error_message)
                 raise CustomException(
-                    error_type='users',
+                    error_type="users",
                     error_message=error_message,
-                    response_status=status.HTTP_409_CONFLICT
+                    response_status=status.HTTP_409_CONFLICT,
                 )
             hashed_password = HashPassword.create_hash(data.password)
             user = User(name=data.username, password=hashed_password, api_key=data.api_key)
@@ -57,9 +58,7 @@ class UserService(AbstractService):
             await self.session.flush()
             await self.session.refresh(user)
             logger.info(msg="User successfully registered")
-            return {
-                "message": "User successfully registered!"
-            }
+            return {"message": "User successfully registered!"}
 
     async def sign_in(self, user: User) -> dict:
         """
@@ -72,20 +71,11 @@ class UserService(AbstractService):
             result = await self.session.execute(req)
             db_user = result.scalar_one_or_none()
             if not db_user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User does not exist"
-                )
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
             if HashPassword().verify_hash(user.password, db_user.password):
                 access_token = create_access_token(db_user.name)
-                return {
-                    "access_token": access_token,
-                    "token_type": "Bearer"
-                }
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Wrong credentials passed"
-            )
+                return {"access_token": access_token, "token_type": "Bearer"}
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Wrong credentials passed")
 
     async def get_me(self, me: User) -> User:
         """
@@ -98,15 +88,15 @@ class UserService(AbstractService):
                 error_message = "User not found"
                 logger.exception(msg=error_message)
                 raise CustomException(
-                    error_type='users',
+                    error_type="users",
                     error_message=error_message,
-                    response_status=status.HTTP_404_NOT_FOUND
+                    response_status=status.HTTP_404_NOT_FOUND,
                 )
-            user = await self.session.execute(select(User).where(User.id == me.id).options(
-             joinedload(User.followers),
-             joinedload(User.following)))
+            user = await self.session.execute(
+                select(User).where(User.id == me.id).options(joinedload(User.followers), joinedload(User.following))
+            )
             user = user.scalar()
-            logger.debug('User retrieved for me endpoint')
+            logger.debug("User retrieved for me endpoint")
             return user
 
     async def get_user(self, user_id: int) -> User:
@@ -115,19 +105,19 @@ class UserService(AbstractService):
         :param user_id: int
         :return: User instance
         """
-        user = await self.session.execute(select(User).where(User.id == user_id).options(
-         joinedload(User.followers),
-         joinedload(User.following)))
+        user = await self.session.execute(
+            select(User).where(User.id == user_id).options(joinedload(User.followers), joinedload(User.following))
+        )
         user = user.scalar()
         if not user:
             error_message = "User not found"
             logger.exception(msg=error_message)
             raise CustomException(
-                error_type='users',
+                error_type="users",
                 error_message=error_message,
-                response_status=status.HTTP_404_NOT_FOUND
+                response_status=status.HTTP_404_NOT_FOUND,
             )
-        logger.debug('User retrieved for id endpoint')
+        logger.debug("User retrieved for id endpoint")
         return user
 
     async def set_follow_user(self, user_id: int, me: User) -> PositiveResponse:
@@ -140,34 +130,31 @@ class UserService(AbstractService):
         async with self.session.begin():
             user = await self.get_user(user_id)
             if not me:
-                error_message = 'Access denied'
+                error_message = "Access denied"
                 logger.warning(msg=error_message)
                 raise CustomException(
-                    error_type='users',
+                    error_type="users",
                     error_message=error_message,
-                    response_status=status.HTTP_403_FORBIDDEN
+                    response_status=status.HTTP_403_FORBIDDEN,
                 )
             if not user:
                 error_message = "User not found"
                 logger.exception(msg=error_message)
                 raise CustomException(
-                    error_type='users',
+                    error_type="users",
                     error_message=error_message,
-                    response_status=status.HTTP_404_NOT_FOUND
+                    response_status=status.HTTP_404_NOT_FOUND,
                 )
             if me.id == user.id:
                 error_message = "Trying to follow yourself"
                 logger.exception(msg=error_message)
                 raise CustomException(
-                    error_type='users',
+                    error_type="users",
                     error_message=error_message,
-                    response_status=status.HTTP_404_NOT_FOUND
+                    response_status=status.HTTP_404_NOT_FOUND,
                 )
             try:
-                stmt = insert(users_connections).values(
-                    follower_id=me.id,
-                    followed_id=user.id
-                )
+                stmt = insert(users_connections).values(follower_id=me.id, followed_id=user.id)
                 await self.session.execute(stmt)
                 await self.session.commit()
                 return PositiveResponse(result=True)
@@ -175,9 +162,9 @@ class UserService(AbstractService):
                 error_message = "Trying to follow the user which is already being followed"
                 logger.exception(msg=error_message)
                 raise CustomException(
-                    error_type='users',
+                    error_type="users",
                     error_message=error_message,
-                    response_status=status.HTTP_404_NOT_FOUND
+                    response_status=status.HTTP_404_NOT_FOUND,
                 )
 
     async def unfollow_user(self, user_id: int, me: User) -> PositiveResponse:
@@ -189,30 +176,26 @@ class UserService(AbstractService):
         """
         async with self.session.begin():
             if not me:
-                error_message = 'Access denied'
+                error_message = "Access denied"
                 logger.warning(msg=error_message)
                 raise CustomException(
-                    error_type='users',
+                    error_type="users",
                     error_message=error_message,
-                    response_status=status.HTTP_403_FORBIDDEN
+                    response_status=status.HTTP_403_FORBIDDEN,
                 )
-            stmt = select(users_connections).where(
-                (column('follower_id') == me.id) &
-                (column('followed_id') == user_id)
-                )
+            stmt = select(users_connections).where((column("follower_id") == me.id) & (column("followed_id") == user_id))
             follow = await self.session.execute(stmt)
             follow = follow.scalar_one_or_none()
             if follow:
                 stmt = delete(users_connections).where(
-                    (column('follower_id') == me.id) &
-                    (column('followed_id') == user_id)
+                    (column("follower_id") == me.id) & (column("followed_id") == user_id)
                 )
                 await self.session.execute(stmt)
                 return PositiveResponse(result=True)
             error_message = "Trying to unfollow user which is not being followed"
             logger.exception(msg=error_message)
             raise CustomException(
-                error_type='users',
+                error_type="users",
                 error_message=error_message,
-                response_status=status.HTTP_404_NOT_FOUND
+                response_status=status.HTTP_404_NOT_FOUND,
             )

@@ -20,6 +20,7 @@ class MediaService(AbstractService):
     """
     Service for db connection for Media cors
     """
+
     async def file_db_record(self, path: str) -> MediaResponse:
         """
         Media instance (image db info) create method
@@ -32,7 +33,7 @@ class MediaService(AbstractService):
             await self.session.flush()
             await self.session.refresh(new_media)
             image = MediaResponse(media_id=new_media.id)
-            logger.debug(msg=f'Image {path} added')
+            logger.debug(msg=f"Image {path} added")
             return image
 
 
@@ -51,11 +52,11 @@ async def update_media_path(media_id: int, new_path: str) -> None:
                 error_message = "Media not found"
                 logger.warning(msg=error_message)
                 raise CustomException(
-                    error_type='media',
+                    error_type="media",
                     error_message=error_message,
-                    response_status=status.HTTP_404_NOT_FOUND
+                    response_status=status.HTTP_404_NOT_FOUND,
                 )
             media.media_url = new_path
             await db.merge(media)
             await db.commit()
-            logger.info(msg='New path is saved')
+            logger.info(msg="New path is saved")

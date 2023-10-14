@@ -26,15 +26,15 @@ async def test_get_me(test_app):
     """
     app = await test_app
     client = AsyncClient(app=app, base_url="http://test")
-    expected = {"result": True,
-                "user": {"id": 1, "name": "mike@klike.com", "followers": [], "following": [
-                    {
-                        "id": 2,
-                        "name": "jorge@klike.com"
-                    }
-                ]
-                         }
-                }
+    expected = {
+        "result": True,
+        "user": {
+            "id": 1,
+            "name": "mike@klike.com",
+            "followers": [],
+            "following": [{"id": 2, "name": "jorge@klike.com"}],
+        },
+    }
     headers = {"api-key": "test"}
     response = await client.get("/api/users/me", headers=headers)
     assert response.json() == expected
