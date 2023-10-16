@@ -20,7 +20,7 @@ logger.setLevel("DEBUG")
 user_router = APIRouter(tags=["users"])
 
 
-@user_router.post("/signup")
+@user_router.post("/signup", status_code=201)
 async def sign_new_user(data: UserRegister, service: UserService = Depends()) -> dict:
     """
     Sign up enpoint
@@ -34,6 +34,7 @@ async def sign_new_user(data: UserRegister, service: UserService = Depends()) ->
 
 @user_router.post("/signin", response_model=TokenResponse)
 async def sign_user_in(user: OAuth2PasswordRequestForm = Depends(), service: UserService = Depends()) -> TokenResponse:
+    print('User: ', user)
     return await service.sign_in(user)
 
 

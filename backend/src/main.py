@@ -66,7 +66,7 @@ def index():
     return RedirectResponse(url="/api/users/me")
 
 
-@app.get("/sentry-debug",  include_in_schema=False)
+@app.get("/sentry-debug", include_in_schema=False)
 async def trigger_error():
     """
     Sentry debug endpoint
