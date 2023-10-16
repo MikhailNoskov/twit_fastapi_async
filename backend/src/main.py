@@ -57,8 +57,8 @@ async def add_user(request: Request, call_next):
     return await call_next(request)
 
 
-@app.get("/api/userinfo/")
-def index(user: str = Depends(authenticate)):
+@app.get("/api/userinfo/", include_in_schema=False)
+def index():
     """
     Userinfo endpoint
     :return: Redirect to get current user endpoint
@@ -66,7 +66,7 @@ def index(user: str = Depends(authenticate)):
     return RedirectResponse(url="/api/users/me")
 
 
-@app.get("/sentry-debug")
+@app.get("/sentry-debug",  include_in_schema=False)
 async def trigger_error():
     """
     Sentry debug endpoint
