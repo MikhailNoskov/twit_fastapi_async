@@ -3,13 +3,14 @@ import random
 import logging.config
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status, UploadFile, File, Depends, Header
+from fastapi import APIRouter, status, UploadFile, File, Depends, Header
 from fastapi.requests import Request
 
 from schema.media import MediaResponse
 from database.media import MediaService
 from celery_app import resize_image, reattach_new_path
 from logging_conf import logs_config
+from exceptions.custom_exceptions import CustomException
 
 
 media_router = APIRouter(tags=["media"])
@@ -37,8 +38,13 @@ async def post_new_media_file(
     user = request.state.user
     default_path = "images/default_kSGOVr.jpg"
     if not user:
-        logger.error("Access denied")
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        error_message = "Access denied"
+        logger.warning(msg=error_message)
+        raise CustomException(
+            error_type="medias",
+            error_message=error_message,
+            response_status=status.HTTP_403_FORBIDDEN,
+        )
     logger.debug(msg=f"User {user} tries to load file {file.filename}")
     letters = string.ascii_letters
     random_str = "".join(random.choice(letters) for i in range(6))
