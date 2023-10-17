@@ -51,5 +51,8 @@ docker-compose up --build - start up project
 docker-compose down - stop project
 ```
 ```shell
+docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit - run tests
+```
+```shell
 docker-compose logs [container name(s)] - get container(s) logs
 ```
