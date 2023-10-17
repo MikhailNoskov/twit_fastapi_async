@@ -111,3 +111,22 @@ async def test_delete_tweet(create_data):
     headers = {"api-key": "test"}
     response = await client.delete("/api/tweets/1", headers=headers)
     assert response.json() == expected
+
+
+@pytest.mark.asyncio
+async def test_delete_tweet_tweet_by_other_user(create_data):
+    """
+    Other user Tweet delete test function
+    :param test_app: App instance
+    :return: None
+    """
+    client = AsyncClient(app=app, base_url="http://test")
+    expected = {
+        "result": False,
+        'error_message': 'Tweet can not be deleted by this user',
+        'error_type': 'tweets'
+    }
+    headers = {"api-key": "test"}
+    response = await client.delete("/api/tweets/2", headers=headers)
+    assert response.json() == expected
+    assert response.status_code == 403
