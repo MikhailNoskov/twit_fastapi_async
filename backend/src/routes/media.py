@@ -19,7 +19,7 @@ logger = logging.getLogger("app.media_routes")
 logger.setLevel("DEBUG")
 
 
-@media_router.post("/", response_model=MediaResponse)
+@media_router.post("/", response_model=MediaResponse, status_code=201)
 async def post_new_media_file(
     request: Request,
     service: MediaService = Depends(),

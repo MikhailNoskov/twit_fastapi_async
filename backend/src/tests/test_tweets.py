@@ -11,7 +11,6 @@ async def test_get_tweets(create_data):
     :param test_app: App instance
     :return: None
     """
-    await create_data
     client = AsyncClient(app=app, base_url="http://test")
     # expected = {
     #     "result": True,
