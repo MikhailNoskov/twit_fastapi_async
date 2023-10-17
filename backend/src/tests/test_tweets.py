@@ -69,6 +69,7 @@ async def test_post_tweet(create_data):
     headers = {"api-key": "test"}
     response = await client.post("/api/tweets/", json=data, headers=headers)
     assert response.json() == expected
+    assert response.status_code == 201
 
 
 @pytest.mark.asyncio
@@ -83,6 +84,7 @@ async def test_like_tweet(create_data):
     headers = {"api-key": "test"}
     response = await client.post("/api/tweets/1/likes", headers=headers)
     assert response.json() == expected
+    assert response.status_code == 201
 
 
 @pytest.mark.asyncio
@@ -97,6 +99,7 @@ async def test_delete_like(create_data):
     headers = {"api-key": "test"}
     response = await client.delete("/api/tweets/1/likes", headers=headers)
     assert response.json() == expected
+    assert response.status_code == 200
 
 
 @pytest.mark.asyncio
@@ -111,6 +114,7 @@ async def test_delete_tweet(create_data):
     headers = {"api-key": "test"}
     response = await client.delete("/api/tweets/1", headers=headers)
     assert response.json() == expected
+    assert response.status_code == 200
 
 
 @pytest.mark.asyncio

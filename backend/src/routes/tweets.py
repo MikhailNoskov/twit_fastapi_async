@@ -15,7 +15,7 @@ logger = logging.getLogger("app.tweets_routes")
 logger.setLevel("DEBUG")
 
 
-@tweet_router.post("/", response_model=TweetResponse)
+@tweet_router.post("/", response_model=TweetResponse, status_code=201)
 async def post_new_tweet(
     request: Request,
     data: TweetCreate,
@@ -58,7 +58,7 @@ async def delete_tweet(
     return await service.remove_tweet(user, tweet_id)
 
 
-@tweet_router.post("/{tweet_id}/likes")
+@tweet_router.post("/{tweet_id}/likes", status_code=201)
 async def like_tweet(
     request: Request,
     tweet_id: int,
