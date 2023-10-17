@@ -12,25 +12,48 @@ async def test_get_tweets(create_data):
     :return: None
     """
     client = AsyncClient(app=app, base_url="http://test")
-    # expected = {
-    #     "result": True,
-    #     "tweets": [
-    #         {
-    #             "id": 0,
-    #             "content": "string",
-    #             "author": {"id": 0, "name": "string"},
-    #             "likes": [{"id": 0, "name": "string"}],
-    #             "attachments": [],
-    #         }
-    #     ],
-    # }
     expected = {
         "result": True,
-        "tweets": []
+        "tweets": [
+            {
+                "id": 1,
+                "content": "Text for the first tweet",
+                "author": {"id": 1, "name": "mike@klike.com"},
+                "likes": [],
+                "attachments": [],
+            },
+            {
+                "id": 2,
+                "content": "Text for the second tweet",
+                "author": {"id": 2, "name": "jorge@klike.com"},
+                "likes": [],
+                "attachments": [],
+            }
+        ],
     }
     headers = {"api-key": "test"}
     response = await client.get("/api/tweets/", headers=headers)
     assert response.json() == expected
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_get_tweets_not_authenticated(create_data):
+    """
+    Get all tweets test function by not authenticated_user
+    :param test_app: App instance
+    :return: None
+    """
+    client = AsyncClient(app=app, base_url="http://test")
+    expected = {
+        "result": False,
+        "error_message": "Access denied",
+        "error_type": "tweets"
+    }
+    headers = {"api-key": "west"}
+    response = await client.get("/api/tweets/", headers=headers)
+    assert response.json() == expected
+    assert response.status_code == 403
 
 
 @pytest.mark.asyncio
@@ -41,7 +64,7 @@ async def test_post_tweet(create_data):
     :return: None
     """
     client = AsyncClient(app=app, base_url="http://test")
-    expected = {"result": True, "tweet_id": 1}
+    expected = {"result": True, "tweet_id": 3}
     data = {"tweet_data": "Un amigo malay"}
     headers = {"api-key": "test"}
     response = await client.post("/api/tweets/", json=data, headers=headers)

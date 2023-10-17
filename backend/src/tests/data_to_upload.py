@@ -4,3 +4,7 @@ users = {
     2: ['rob@klike.com', 'pass_3', 'nest'],
 }
 
+tweets = {
+    1: 'Text for the first tweet',
+    2: 'Text for the second tweet'
+}

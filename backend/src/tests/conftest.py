@@ -7,7 +7,7 @@ from database.connection import Base, get_session, engine, async_session_maker
 from auth.hash_password import HashPassword
 from models.users import User, users_connections
 from models.tweets import Tweet, Like
-from tests.data_to_upload import users
+from tests.data_to_upload import users, tweets
 
 
 @pytest.fixture(scope="session")
@@ -45,5 +45,10 @@ async def create_data(drop_base):
                 await session.refresh(user)
             stmt = insert(users_connections).values(follower_id=1, followed_id=2)
             await session.execute(stmt)
-            await session.commit()
+            await session.flush()
+            for author_id, text in tweets.items():
+                new_tweet = Tweet(content=text, author_id=author_id)
+                session.add(new_tweet)
+                await session.flush()
+                await session.refresh(new_tweet)
 
