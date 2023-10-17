@@ -1,10 +1,9 @@
 from typing import Optional
+import logging.config
 
-from fastapi import HTTPException, status, Depends, Header
-from sqlalchemy import select, insert, update, column, delete
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, selectinload, subqueryload, aliased
+from fastapi import status, Header
+from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload, subqueryload
 
 
 from models.tweets import Tweet, Like
@@ -13,125 +12,193 @@ from models.media import Media
 from schema.tweets import TweetDisplay, TweetsList, TweetCreate, TweetResponse
 from schema.users import UserFollower
 from schema.positive import PositiveResponse
-from database.connection import async_session_maker as session
+from logging_conf import logs_config
+from database.services import AbstractService
+from exceptions.custom_exceptions import CustomException
+
+logging.config.dictConfig(logs_config)
+logger = logging.getLogger("app.db_tweets")
+logger.setLevel("DEBUG")
 
 
-async def create_new_tweet(user: User, data: TweetCreate):
-    async with session() as db:
-        async with db.begin():
+class TweetService(AbstractService):
+    """
+    Service for db connection for Tweet cors
+    """
+
+    async def create_new_tweet(self, user: User, data: TweetCreate) -> TweetResponse:
+        """
+        New tweet create method
+        :param user: User instance
+        :param data: Tweet data including content, likes and author info
+        :return: Tweet response with the id of tweet created
+        """
+        async with self.session.begin():
             if not user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
+                error_message = "Access denied"
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type="tweets",
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN,
                 )
-            new_tweet = Tweet(
-                content=data.tweet_data,
-                author=user
-            )
-            db.add(new_tweet)
-            await db.flush()
-            await db.refresh(new_tweet)
+            new_tweet = Tweet(content=data.tweet_data, author=user)
+            self.session.add(new_tweet)
+            await self.session.flush()
+            await self.session.refresh(new_tweet)
             if data.tweet_media_ids:
-                await db.execute(update(Media).where(Media.id.in_(data.tweet_media_ids)).values(tweet_id=new_tweet.id))
+                await self.session.execute(
+                    update(Media).where(Media.id.in_(data.tweet_media_ids)).values(tweet_id=new_tweet.id)
+                )
             tweet = TweetResponse(tweet_id=new_tweet.id)
+            logger.info(msg="Tweet created")
             return tweet
 
-
-async def remove_tweet(user: User, tweet_id: int):
-    async with session() as db:
-        async with db.begin():
+    async def remove_tweet(self, user: User, tweet_id: int) -> PositiveResponse:
+        """
+        Tweet delete method
+        :param user: User instance
+        :param tweet_id: ID of the tweet being deleted
+        :return: Positive response in case of successful delete
+        """
+        async with self.session.begin():
             if not user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
+                error_message = "Access denied"
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type="tweets",
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN,
                 )
-            tweet = await db.execute(select(Tweet).where(Tweet.id == tweet_id))
+            tweet = await self.session.execute(select(Tweet).where(Tweet.id == tweet_id))
             tweet = tweet.scalar_one_or_none()
             if not tweet:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Tweet not found"
+                error_message = "Tweet not found"
+                raise CustomException(
+                    error_type="tweets",
+                    error_message=error_message,
+                    response_status=status.HTTP_404_NOT_FOUND,
                 )
             if user.id != tweet.author_id:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="You can not delete this tweet"
+                error_message = "Tweet can not be deleted by this user"
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type="tweets",
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN,
                 )
-            await db.delete(tweet)
+            await self.session.delete(tweet)
+            logger.warning(msg="Tweet has been deleted")
             return PositiveResponse(result=True)
 
-
-async def create_like(user, tweet_id: int):
-    async with session() as db:
-        async with db.begin():
+    async def create_like(self, user, tweet_id: int) -> PositiveResponse:
+        """
+        Like created method
+        :param user: User instance
+        :param tweet_id: ID of the tweet being liked
+        :return: Positive response in case of successful like
+        """
+        async with self.session.begin():
             if not user:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Access denied"
+                error_message = "Access denied"
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type="likes",
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN,
                 )
-            like = await db.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
+            tweet = await self.session.execute(select(Tweet).where(Tweet.id == tweet_id))
+            tweet = tweet.scalar_one_or_none()
+            if not tweet:
+                error_message = "Tweet not found"
+                raise CustomException(
+                    error_type="tweets",
+                    error_message=error_message,
+                    response_status=status.HTTP_404_NOT_FOUND,
+                )
+            like = await self.session.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
             like = like.scalar_one_or_none()
             if like:
-                # raise HTTPException(
-                #     status_code=status.HTTP_403_FORBIDDEN,
-                #     detail="You have already liked this tweet"
-                # )
-                return await delete_like(user, tweet_id)
+                logger.debug(msg="Redirected to dislike tweet")
+                await self.session.delete(like)
+                logger.debug(msg="Tweet is unliked")
+                return PositiveResponse(result=True)
             new_like = Like(user_id=user.id, tweet_id=tweet_id)
-            db.add(new_like)
-            await db.flush()
-            await db.refresh(new_like)
+            self.session.add(new_like)
+            await self.session.flush()
+            await self.session.refresh(new_like)
+            logger.debug(msg="Tweet is liked")
             return PositiveResponse(result=True)
 
-
-async def delete_like(user, tweet_id: int):
-    async with session() as db:
-        async with db.begin():
+    async def delete_like(self, user, tweet_id: int) -> PositiveResponse:
+        """
+        Like delete method
+        :param user: User instance
+        :param tweet_id: ID of the tweet being unliked
+        :return: Positive response in case of successful unlike
+        """
+        async with self.session.begin():
             if not user:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Access denied"
+                error_message = "Access denied"
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type="likes",
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN,
                 )
-            like = await db.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
+            like = await self.session.execute(select(Like).where(Like.user_id == user.id, Like.tweet_id == tweet_id))
             like = like.scalar_one_or_none()
             if not like:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You have not liked this tweet"
+                error_message = "The tweet can not be unliked"
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type="tweets",
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN,
                 )
-            await db.delete(like)
+            await self.session.delete(like)
+            logger.debug(msg="Tweet is unliked")
             return PositiveResponse(result=True)
 
-
-async def get_all_tweets(user, api_key: Optional[str] = Header(...)):
-    async with session() as db:
-        async with db.begin():
-            tweets = await db.execute(select(Tweet).options(
-                selectinload(Tweet.author),  # Eagerly load Author
-                subqueryload(Tweet.likes).options(subqueryload(Like.user)),
-                subqueryload(Tweet.attachments)  # Eagerly load Likes
-            ))
+    async def get_all_tweets(self, user, api_key: Optional[str] = Header(...)):
+        """
+        Get all the tweets for the current user
+        :param user: Instance of current user
+        :param api_key: #  Remove it!!!!
+        :return: List of the Tweets which can be seen by current User
+        """
+        async with self.session.begin():
+            if not user:
+                error_message = "Access denied"
+                logger.warning(msg=error_message)
+                raise CustomException(
+                    error_type="tweets",
+                    error_message=error_message,
+                    response_status=status.HTTP_403_FORBIDDEN,
+                )
+            tweets = await self.session.execute(
+                select(Tweet).options(
+                    selectinload(Tweet.author),  # Eagerly load Author
+                    subqueryload(Tweet.likes).options(subqueryload(Like.user)),
+                    subqueryload(Tweet.attachments),  # Eagerly load Likes
+                )
+            )
             tweets = tweets.scalars().all()
             tweets_response = []
             for tweet in tweets:
                 tweet_display = TweetDisplay(
                     id=tweet.id,
                     content=tweet.content,
-                    author=UserFollower(
-                        id=tweet.author.id,
-                        name=tweet.author.name
-                    ),
+                    author=UserFollower(id=tweet.author.id, name=tweet.author.name),
                     likes=[],
-                    attachments=[]
+                    attachments=[],
                 )
                 for like in tweet.likes:
-                    tweet_display.likes.append(
-                        UserFollower(id=like.user.id, name=like.user.name)
-                    )
+                    tweet_display.likes.append(UserFollower(id=like.user.id, name=like.user.name))
                 for attachment in tweet.attachments:
                     tweet_display.attachments.append(attachment.media_url)
                 tweets_response.append(tweet_display)
             # Optimize with db query
             tweets_response = sorted(tweets_response, key=lambda t: len(t.likes), reverse=True)
+            logger.debug(msg="All tweets retrieved")
             return TweetsList(result=True, tweets=tweets_response)
-            # return TweetsList(result=True, tweets=[TweetDisplay.from_orm(tweet) for tweet in tweets])

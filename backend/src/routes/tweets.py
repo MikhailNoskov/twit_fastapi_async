@@ -1,51 +1,117 @@
-from typing import Optional, List
+import logging.config
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status, Header, Depends
+from fastapi import APIRouter, Header, Depends
 from fastapi.requests import Request
-from schema.tweets import TweetDisplay, TweetsList, TweetCreate, TweetResponse
-from schema.positive import PositiveResponse
-from database.tweets import create_new_tweet, remove_tweet, create_like, delete_like, get_all_tweets
-from database.users import set_follow_user, unfollow_user
+
+from schema.tweets import TweetsList, TweetCreate, TweetResponse
+from database.tweets import TweetService
+from logging_conf import logs_config
 
 tweet_router = APIRouter(tags=["tweets"])
 
+logging.config.dictConfig(logs_config)
+logger = logging.getLogger("app.tweets_routes")
+logger.setLevel("DEBUG")
 
-@tweet_router.post('/', response_model=TweetResponse)
-async def post_new_tweet(request: Request, data: TweetCreate, api_key: Optional[str] = Header(...)):
+
+@tweet_router.post("/", response_model=TweetResponse)
+async def post_new_tweet(
+    request: Request,
+    data: TweetCreate,
+    service: TweetService = Depends(),
+    api_key: Optional[str] = Header(None),
+):
+    """
+    New tweet create endpoint
+    -------------------------
+    :param\n
+    request: Request\n
+    data: Tweet info received\n
+    service: Tweet db connection service instance\n
+    api_key: str\n
+    :return\n
+    Tweet create method of Tweet service
+    """
     user = request.state.user
-    return await create_new_tweet(user, data)
+    logger.info(msg=f"User {user} tries creating a tweet")
+    return await service.create_new_tweet(user, data)
 
 
-@tweet_router.delete('/{tweet_id}')
-async def delete_tweet(request: Request, tweet_id: int, api_key: Optional[str] = Header(...)):
+@tweet_router.delete("/{tweet_id}")
+async def delete_tweet(
+    request: Request,
+    tweet_id: int,
+    service: TweetService = Depends(),
+    api_key: Optional[str] = Header(None),
+):
+    """
+    Tweet delete endpoint
+    :param request: Request
+    :param tweet_id: int
+    :param service: Tweet db connection service instance
+    :param api_key: str
+    :return: Tweet delete method of Tweet service
+    """
     user = request.state.user
-    return await remove_tweet(user, tweet_id)
+    logger.info(msg=f"User {user} tries deleting a tweet")
+    return await service.remove_tweet(user, tweet_id)
 
 
-@tweet_router.post('/{tweet_id}/likes')
-async def like_tweet(request: Request, tweet_id: int, api_key: Optional[str] = Header(...)):
+@tweet_router.post("/{tweet_id}/likes")
+async def like_tweet(
+    request: Request,
+    tweet_id: int,
+    service: TweetService = Depends(),
+    api_key: Optional[str] = Header(None),
+):
+    """
+    Like tweet enpoint
+    :param request: Request
+    :param tweet_id: int
+    :param service: Tweet db connection service instance
+    :param api_key: str
+    :return: Tweet like create method of Tweet service
+    """
     user = request.state.user
-    return await create_like(user, tweet_id)
+    logger.info(msg=f"User {user} tries liking a tweet {tweet_id}")
+    return await service.create_like(user, tweet_id)
 
 
-@tweet_router.delete('/{tweet_id}/likes')
-async def unlike_tweet(request: Request, tweet_id: int, api_key: Optional[str] = Header(...)):
+@tweet_router.delete("/{tweet_id}/likes")
+async def unlike_tweet(
+    request: Request,
+    tweet_id: int,
+    service: TweetService = Depends(),
+    api_key: Optional[str] = Header(None),
+):
+    """
+    Unlike tweet enpoint
+    :param request: Request
+    :param tweet_id: int
+    :param service: Tweet db connection service instance
+    :param api_key: str
+    :return: Tweet like delete method of Tweet service
+    """
     user = request.state.user
-    return await delete_like(user, tweet_id)
+    logger.info(msg=f"User {user} tries unliking a tweet {tweet_id}")
+    return await service.delete_like(user, tweet_id)
 
 
-@tweet_router.get('/', response_model=TweetsList)
-# @tweet_router.get('/', response_model=List[TweetDisplay])
-async def get_tweets(request: Request, api_key: Optional[str] = Header(...)):
+@tweet_router.get("/", response_model=TweetsList)
+async def get_tweets(
+    request: Request,
+    service: TweetService = Depends(),
+    api_key: Optional[str] = Header(None),
+    # authed = Depends(authenticate)
+):
+    """
+    Get all tweets enpoint
+    :param request: Request
+    :param service: Tweet db connection service instance
+    :param api_key: str
+    :return: Get all tweets method of Tweet service
+    """
+    logger.debug(msg="All tweets endpoint called")
     user = request.state.user
-    return await get_all_tweets(user)
-
-
-# @tweet_router.post('/{user_id}/follow', response_model=PositiveResponse)
-# async def follow_user(user_id: int, api_key: Optional[str] = Header(...)):
-#     return await set_follow_user(user_id, api_key)
-#
-#
-# @tweet_router.delete('/{user_id}/follow', response_model=PositiveResponse)
-# async def follow_user(user_id: int, api_key: Optional[str] = Header(...)):
-#     return await unfollow_user(user_id, api_key)
+    return await service.get_all_tweets(user)

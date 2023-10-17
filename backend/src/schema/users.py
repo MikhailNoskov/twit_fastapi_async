@@ -1,8 +1,12 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from pydantic import BaseModel
+from typing import List
 
 
 class UserRegister(BaseModel):
+    """
+    User register schema
+    """
+
     username: str
     password: str
     api_key: str
@@ -13,12 +17,16 @@ class UserRegister(BaseModel):
             "example": {
                 "username": "mike@klike.com",
                 "password": "strong!!!",
-                "api_key": "test"
+                "api_key": "test",
             }
         }
 
 
 class UserFollower(BaseModel):
+    """
+    User follower schema
+    """
+
     id: int
     name: str
 
@@ -27,6 +35,10 @@ class UserFollower(BaseModel):
 
 
 class UserFollowing(BaseModel):
+    """
+    Followed User schema
+    """
+
     id: int
     name: str
 
@@ -35,16 +47,24 @@ class UserFollowing(BaseModel):
 
 
 class UserForResponse(BaseModel):
+    """
+    User response schema
+    """
+
     id: int
     name: str
-    followers: List[UserFollower] = None
-    following: List[UserFollowing] = None
+    followers: List[UserFollower] = []
+    following: List[UserFollowing] = []
 
     class Config:
         orm_mode = True
 
 
 class UserResponse(BaseModel):
+    """
+    User response with result schema
+    """
+
     result: bool
     user: UserForResponse
 

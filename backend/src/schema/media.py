@@ -1,8 +1,11 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from pydantic import BaseModel
 
 
 class MediaResponse(BaseModel):
+    """
+    MediaResponse schema
+    """
+
     result: bool = True
     media_id: int
 
