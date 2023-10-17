@@ -14,7 +14,7 @@ async def test_signup_correctly(create_data):
     :param test_app: App instance
     :return: None
     """
-    await create_data
+    # await create_data
     client = AsyncClient(app=app, base_url="http://test")
     data = {"username": "june@klike.com", "password": "strong!!!", "api_key": "cest"}
     response = await client.post("/api/users/signup", json=data)
