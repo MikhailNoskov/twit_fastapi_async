@@ -1,0 +1,64 @@
+version: '3'
+services:
+  test_db:
+    image: postgres:12
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+
+    volumes:
+      - ./db_data_test:/var/lib/postgresql/data
+    container_name: test_db
+    ports:
+      - 5678:5432
+    networks:
+      - mike_test
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL", "pg_isready -d ${DB_NAME} -U ${DB_USER}"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend/src
+      dockerfile: Dockerfile.test
+
+    image: backend
+    container_name: backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@test_db:${DB_PORT}/testdb
+    command: bash -c "pytest tests"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - test_db
+    networks:
+      - mike_test
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    networks:
+      - mike_test
+
+  worker:
+    build: ./backend/src
+    command: celery -A celery_app worker --loglevel=info
+    depends_on:
+      - backend
+      - redis
+    container_name: worker
+    networks:
+      - mike_test
+
+
+networks:
+  mike_test:
+    driver: bridge

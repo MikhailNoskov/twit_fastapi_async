@@ -115,7 +115,9 @@ async def test_get_me(create_data):
             "id": 1,
             "name": "mike@klike.com",
             "followers": [],
-            "following": [],
+            "following": [
+                {'id': 2, 'name': 'jorge@klike.com'}
+            ],
         },
     }
     headers = {"api-key": "test"}
@@ -147,7 +149,17 @@ async def test_get_user_by_id(create_data):
     :return: None
     """
     client = AsyncClient(app=app, base_url="http://test")
-    expected = {"result": True, "user": {"id": 2, "name": "jorge@klike.com", "followers": [], "following": []}}
+    expected = {
+        "result": True,
+        "user": {
+            "id": 2,
+            "name": "jorge@klike.com",
+            "followers": [
+                {'id': 1, 'name': 'mike@klike.com'}
+            ],
+            "following": []
+        }
+    }
     headers = {"api-key": "test"}
     response = await client.get("/api/users/2", headers=headers)
     assert response.json() == expected
@@ -170,9 +182,29 @@ async def test_get_user_by_id_does_not_exist(create_data):
 
 
 @pytest.mark.asyncio
-async def test_follow_user(drop_base):
+async def test_unfollow_user_not_followed(create_data):
     """
-    Follow User test function
+    Unfollow not followed User test function
+    :param test_app: App instance
+    :return: None
+    """
+    # app = await test_app
+    client = AsyncClient(app=app, base_url="http://test")
+    expected = {
+        'error_message': 'Trying to unfollow user which is not being followed',
+        'error_type': 'users',
+        "result": False
+    }
+    headers = {"api-key": "test"}
+    response = await client.delete("/api/users/3/follow", headers=headers)
+    assert response.json() == expected
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_follow_user_not_followed(drop_base):
+    """
+    Follow not followed User test function
     :param test_app: App instance
     :return: None
     """
@@ -180,15 +212,35 @@ async def test_follow_user(drop_base):
     client = AsyncClient(app=app, base_url="http://test")
     expected = {"result": True}
     headers = {"api-key": "test"}
-    response = await client.post("/api/users/2/follow", headers=headers)
+    response = await client.post("/api/users/3/follow", headers=headers)
     assert response.json() == expected
     assert response.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_unfollow_user(create_data):
+async def test_follow_user_followed(drop_base):
     """
-    Unfollow User test function
+    Follow followed User test function
+    :param test_app: App instance
+    :return: None
+    """
+    # app = await test_app
+    client = AsyncClient(app=app, base_url="http://test")
+    expected = {
+        'error_message': 'Trying to follow the user which is already being followed',
+        'error_type': 'users',
+        'result': False
+    }
+    headers = {"api-key": "test"}
+    response = await client.post("/api/users/2/follow", headers=headers)
+    assert response.json() == expected
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_unfollow_user_followed(create_data):
+    """
+    Unfollow followed User test function
     :param test_app: App instance
     :return: None
     """
@@ -199,3 +251,23 @@ async def test_unfollow_user(create_data):
     response = await client.delete("/api/users/2/follow", headers=headers)
     assert response.json() == expected
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_follow_self(create_data):
+    """
+    Follow self test function
+    :param test_app: App instance
+    :return: None
+    """
+    # app = await test_app
+    client = AsyncClient(app=app, base_url="http://test")
+    expected = {
+        'error_message': 'Trying to follow yourself',
+        'error_type': 'users',
+        "result": False
+    }
+    headers = {"api-key": "test"}
+    response = await client.post("/api/users/1/follow", headers=headers)
+    assert response.json() == expected
+    assert response.status_code == 404
