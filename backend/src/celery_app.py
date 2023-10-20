@@ -34,40 +34,46 @@ def resize_image(name, path, file_bytes, size_mb=2) -> None:
     :param size_mb: File size threshold
     :return: None
     """
-    if len(file_bytes) > 2 * 1024 * 1024:  # 2Mb
-        logger.warning(msg="Big file")
-        input_stream = io.BytesIO(file_bytes)
-        image = Image.open(input_stream)
+    try:
+        if len(file_bytes) > 2 * 1024 * 1024:  # 2Mb
+            logger.warning(msg="Big file")
+            input_stream = io.BytesIO(file_bytes)
+            image = Image.open(input_stream)
 
-        # Calculate resize ratio
-        ratio = 2 * 1024 * 1024 / len(file_bytes)
-        new_width = int(image.width * ratio)
-        new_height = int(image.height * ratio)
+            # Calculate resize ratio
+            ratio = 2 * 1024 * 1024 / len(file_bytes)
+            new_width = int(image.width * ratio)
+            new_height = int(image.height * ratio)
 
-        image = image.resize((new_width, new_height))
+            image = image.resize((new_width, new_height))
 
-        # Convert to RGB if needed
-        if image.mode != "RGB":
-            logger.debug(msg="Schema is not RGB")
-            image = image.convert("RGB")
-        # Convert to lower quality JPEG
-        output_stream = io.BytesIO()
-        image.save(output_stream, "JPEG", quality=70)
-        resized_bytes = output_stream.getvalue()
-    else:
-        resized_bytes = file_bytes
-    with open(path, "wb") as f:
-        f.write(resized_bytes)
-    s3.upload_file(path, "amigomalay", name)
-    logger.info(msg="File saved")
-    os.remove(path)
-    logger.info(msg="Temporary file removed")
+            # Convert to RGB if needed
+            if image.mode != "RGB":
+                logger.debug(msg="Schema is not RGB")
+                image = image.convert("RGB")
+            # Convert to lower quality JPEG
+            output_stream = io.BytesIO()
+            image.save(output_stream, "JPEG", quality=70)
+            resized_bytes = output_stream.getvalue()
+        else:
+            resized_bytes = file_bytes
+        with open(path, "wb") as f:
+            f.write(resized_bytes)
+        s3.upload_file(path, "amigomalay", name)
+        logger.info(msg="File saved")
+        os.remove(path)
+        logger.info(msg="Temporary file removed")
+    except Exception as err:
+        logger.warning(msg=f'Error occurred while resizing the image {err}')
 
 
 @celery_app.task
 def reattach_new_path(image_id: int, path: str) -> None:
-    async def wrapped():
-        await update_media_path(media_id=image_id, new_path=path)
+    try:
+        async def wrapped():
+            await update_media_path(media_id=image_id, new_path=path)
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(wrapped())
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(wrapped())
+    except Exception as err:
+        logger.warning(msg=f'Error occurred while reattaching the link og image {err}')
