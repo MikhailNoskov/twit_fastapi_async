@@ -24,7 +24,7 @@ USER_ERROR_RESPONSES = {
         "content": {
             "application/json": {
                 "example": {
-                    "result": "false",
+                    "result": False,
                     "error_type": "users",
                     "error_message": "User not found"
                 }
@@ -36,7 +36,7 @@ USER_ERROR_RESPONSES = {
         "content": {
             "application/json": {
                 "example": {
-                    "result": "false",
+                    "result": False,
                     "error_type": "user",
                     "error_message": "User with supplied api_key exists"
                 }
@@ -51,7 +51,7 @@ MEDIA_ERROR_RESPONSES = {
         "content": {
             "application/json": {
                 "example": {
-                    "result": "false",
+                    "result": False,
                     "error_type": "media",
                     "error_message": "Access denied"
                 }
@@ -66,7 +66,7 @@ TWEET_ERROR_RESPONSES = {
         "content": {
             "application/json": {
                 "example": {
-                    "result": "false",
+                    "result": False,
                     "error_type": "tweets",
                     "error_message": "Access denied"
                 }
@@ -78,7 +78,7 @@ TWEET_ERROR_RESPONSES = {
         "content": {
             "application/json": {
                 "example": {
-                    "result": "false",
+                    "result": False,
                     "error_type": "tweets",
                     "error_message": "Tweet not found"
                 }
