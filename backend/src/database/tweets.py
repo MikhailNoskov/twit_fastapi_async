@@ -154,7 +154,7 @@ class TweetService(AbstractService):
                 raise CustomException(
                     error_type="tweets",
                     error_message=error_message,
-                    response_status=status.HTTP_403_FORBIDDEN,
+                    response_status=status.HTTP_404_NOT_FOUND,
                 )
             await self.session.delete(like)
             logger.debug(msg="Tweet is unliked")

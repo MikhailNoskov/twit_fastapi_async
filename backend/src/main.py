@@ -29,7 +29,7 @@ sentry_sdk.init(
 )
 
 API_KEY = APIKeyHeader(name="api-key", auto_error=False)
-app = FastAPI()
+app = FastAPI(title='SkillTweet', description='Tweeterlike app')
 
 app.include_router(user_router, prefix="/api/users")
 app.include_router(tweet_router, prefix="/api/tweets")

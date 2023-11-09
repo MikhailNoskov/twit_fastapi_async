@@ -5,8 +5,10 @@ from fastapi import APIRouter, Header, Depends
 from fastapi.requests import Request
 
 from schema.tweets import TweetsList, TweetCreate, TweetResponse
+from schema.positive import PositiveResponse
 from database.tweets import TweetService
 from logging_conf import logs_config
+from .response_info import TWEET_ERROR_RESPONSES
 
 tweet_router = APIRouter(tags=["tweets"])
 
@@ -15,7 +17,14 @@ logger = logging.getLogger("app.tweets_routes")
 logger.setLevel("DEBUG")
 
 
-@tweet_router.post("/", response_model=TweetResponse, status_code=201)
+@tweet_router.post(
+    "/",
+    response_model=TweetResponse,
+    status_code=201,
+    responses={
+        '403': TWEET_ERROR_RESPONSES[403]
+    }
+)
 async def post_new_tweet(
     request: Request,
     data: TweetCreate,
@@ -38,7 +47,14 @@ async def post_new_tweet(
     return await service.create_new_tweet(user, data)
 
 
-@tweet_router.delete("/{tweet_id}")
+@tweet_router.delete(
+    "/{tweet_id}",
+    response_model=PositiveResponse,
+    responses={
+        '403': TWEET_ERROR_RESPONSES[403],
+        '404': TWEET_ERROR_RESPONSES[404],
+    }
+)
 async def delete_tweet(
     request: Request,
     tweet_id: int,
@@ -59,7 +75,16 @@ async def delete_tweet(
     return await service.remove_tweet(user, tweet_id)
 
 
-@tweet_router.post("/{tweet_id}/likes", status_code=201)
+@tweet_router.post(
+    "/{tweet_id}/likes",
+    response_model=PositiveResponse,
+
+    status_code=201,
+    responses={
+        '403': TWEET_ERROR_RESPONSES[403],
+        '404': TWEET_ERROR_RESPONSES[404],
+    }
+)
 async def like_tweet(
     request: Request,
     tweet_id: int,
@@ -80,7 +105,14 @@ async def like_tweet(
     return await service.create_like(user, tweet_id)
 
 
-@tweet_router.delete("/{tweet_id}/likes")
+@tweet_router.delete(
+    "/{tweet_id}/likes",
+    response_model=PositiveResponse,
+    responses={
+        '403': TWEET_ERROR_RESPONSES[403],
+        '404': TWEET_ERROR_RESPONSES[404],
+    }
+)
 async def unlike_tweet(
     request: Request,
     tweet_id: int,
@@ -105,18 +137,7 @@ async def unlike_tweet(
     "/",
     response_model=TweetsList,
     responses={
-        "403": {
-            "description": "Successful Response",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "result": "false",
-                        "error_type": "Tweets",
-                        "error_message": "Access denied"
-                    }
-                }
-            }
-        }
+        "403": TWEET_ERROR_RESPONSES[403]
     }
 )
 async def get_tweets(

@@ -59,3 +59,30 @@ MEDIA_ERROR_RESPONSES = {
         }
     }
 }
+
+TWEET_ERROR_RESPONSES = {
+    403: {
+        "description": "CustomException Error",
+        "content": {
+            "application/json": {
+                "example": {
+                    "result": "false",
+                    "error_type": "tweets",
+                    "error_message": "Access denied"
+                }
+            }
+        }
+    },
+    404: {
+        "description": "CustomException Error",
+        "content": {
+            "application/json": {
+                "example": {
+                    "result": "false",
+                    "error_type": "tweets",
+                    "error_message": "Tweet not found"
+                }
+            }
+        }
+    }
+}
