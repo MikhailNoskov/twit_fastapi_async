@@ -29,11 +29,12 @@ async def post_new_media_file(
 ):
     """
     Image file save endpoint
-    :param api_key: str
-    :param request: Request
-    :param service: Media db connect service instance
-    :param file: Uploaded file
-    :return: Image file info db create method of Media service
+    ------------------------
+    :param api_key: str\n
+    :param request: Request\n
+    :param service: Media db connect service instance\n
+    :param file: Uploaded file\n
+    :return: Image file info db create method of Media service\n
     """
     user = request.state.user
     default_path = "images/default_kSGOVr.jpg"

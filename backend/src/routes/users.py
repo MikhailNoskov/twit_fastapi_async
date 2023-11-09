@@ -23,10 +23,11 @@ user_router = APIRouter(tags=["users"])
 @user_router.post("/signup", status_code=201)
 async def sign_new_user(data: UserRegister, service: UserService = Depends()) -> dict:
     """
-    Sign up enpoint
-    :param data: User info
-    :param service: User db connection service
-    :return: New user create method of User service
+    Sign up endpoint
+    ---------------
+    :param data: User info\n
+    :param service: User db connection service\n
+    :return: New user create method of User service\n
     """
     logger.debug(msg="Trying register new user")
     return await service.create_user(data=data)
@@ -34,7 +35,14 @@ async def sign_new_user(data: UserRegister, service: UserService = Depends()) ->
 
 @user_router.post("/signin", response_model=TokenResponse)
 async def sign_user_in(user: OAuth2PasswordRequestForm = Depends(), service: UserService = Depends()) -> TokenResponse:
-    print('User: ', user)
+    """
+    Sign up endpoint
+    ---------------
+    :param user: User info\n
+    :param service: User db connection service\n
+    :return: User sign in method of User service\n
+    """
+    logger.debug(msg=f"Trying signing in user {user}")
     return await service.sign_in(user)
 
 
@@ -46,10 +54,11 @@ async def me(
 ):
     """
     Current user info endpoint
-    :param request: Request
-    :param service: User db connection service
-    :param api_key: str
-    :return: Get current authenticated user method of User service
+    --------------------------
+    :param request: Request\n
+    :param service: User db connection service\n
+    :param api_key: str\n
+    :return: Get current authenticated user method of User service\n
     """
     logger.info(msg="Me endpoint called")
     me = request.state.user
@@ -65,10 +74,11 @@ async def get_user_by_id(
 ):
     """
     Get User by ID endpoint
-    :param user_id: int
-    :param service: User db connection service
-    :param api_key: str
-    :return: Get user by ID method of User service
+    -----------------------
+    :param user_id: int\n
+    :param service: User db connection service\n
+    :param api_key: str\n
+    :return: Get user by ID method of User service\n
     """
     logger.info(msg=f"Get {user_id} endpoint called")
     result = await service.get_user(user_id)
@@ -84,11 +94,12 @@ async def follow_user(
 ):
     """
     Follow User endpoint
-    :param request: Request
-    :param user_id: int
-    :param service: User db connection service
-    :param api_key: str
-    :return: Follow user by ID method of User service
+    --------------------
+    :param request: Request\n
+    :param user_id: int\n
+    :param service: User db connection service\n
+    :param api_key: str\n
+    :return: Follow user by ID method of User service\n
     """
     logger.info(msg=f"{request.state.user} tries to follow user {user_id}")
     return await service.set_follow_user(user_id, request.state.user)
@@ -103,11 +114,12 @@ async def stop_follow_user(
 ):
     """
     Unfollow User endpoint
-    :param request: Request
-    :param user_id: int
-    :param service: User db connection service
-    :param api_key: str
-    :return: Unfollow user by ID method of User service
+    ----------------------
+    :param request: Request\n
+    :param user_id: int\n
+    :param service: User db connection service\n
+    :param api_key: str\n
+    :return: Unfollow user by ID method of User service\n
     """
     logger.info(msg=f"{request.state.user} tries to unfollow user {user_id}")
     return await service.unfollow_user(user_id, request.state.user)

@@ -47,11 +47,12 @@ async def delete_tweet(
 ):
     """
     Tweet delete endpoint
-    :param request: Request
-    :param tweet_id: int
-    :param service: Tweet db connection service instance
-    :param api_key: str
-    :return: Tweet delete method of Tweet service
+    ----------------------
+    :param request: Request\n
+    :param tweet_id: int\n
+    :param service: Tweet db connection service instance\n
+    :param api_key: str\n
+    :return: Tweet delete method of Tweet service\n
     """
     user = request.state.user
     logger.info(msg=f"User {user} tries deleting a tweet")
@@ -67,11 +68,12 @@ async def like_tweet(
 ):
     """
     Like tweet enpoint
-    :param request: Request
-    :param tweet_id: int
-    :param service: Tweet db connection service instance
-    :param api_key: str
-    :return: Tweet like create method of Tweet service
+    --------------------
+    :param request: Request\n
+    :param tweet_id: int\n
+    :param service: Tweet db connection service instance\n
+    :param api_key: str\n
+    :return: Tweet like create method of Tweet service\n
     """
     user = request.state.user
     logger.info(msg=f"User {user} tries liking a tweet {tweet_id}")
@@ -87,11 +89,12 @@ async def unlike_tweet(
 ):
     """
     Unlike tweet enpoint
-    :param request: Request
-    :param tweet_id: int
-    :param service: Tweet db connection service instance
-    :param api_key: str
-    :return: Tweet like delete method of Tweet service
+    ---------------------
+    :param request: Request\n
+    :param tweet_id: int\n
+    :param service: Tweet db connection service instance\n
+    :param api_key: str\n
+    :return: Tweet like delete method of Tweet service\n
     """
     user = request.state.user
     logger.info(msg=f"User {user} tries unliking a tweet {tweet_id}")
@@ -107,10 +110,11 @@ async def get_tweets(
 ):
     """
     Get all tweets enpoint
-    :param request: Request
-    :param service: Tweet db connection service instance
-    :param api_key: str
-    :return: Get all tweets method of Tweet service
+    -----------------------
+    :param request: Request\n
+    :param service: Tweet db connection service instance\n
+    :param api_key: str\n
+    :return: Get all tweets method of Tweet service\n
     """
     logger.debug(msg="All tweets endpoint called")
     user = request.state.user
