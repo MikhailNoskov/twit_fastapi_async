@@ -11,6 +11,7 @@ from database.media import MediaService
 from celery_app import resize_image, reattach_new_path
 from logging_conf import logs_config
 from exceptions.custom_exceptions import CustomException
+from .response_info import MEDIA_ERROR_RESPONSES
 
 
 media_router = APIRouter(tags=["media"])
@@ -20,7 +21,15 @@ logger = logging.getLogger("app.media_routes")
 logger.setLevel("DEBUG")
 
 
-@media_router.post("/", response_model=MediaResponse, status_code=201)
+@media_router.post(
+    "/",
+    response_model=MediaResponse,
+    status_code=201,
+    responses={
+        "403": MEDIA_ERROR_RESPONSES[403]
+    }
+
+)
 async def post_new_media_file(
     request: Request,
     service: MediaService = Depends(),

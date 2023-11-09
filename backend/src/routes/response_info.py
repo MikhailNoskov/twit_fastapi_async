@@ -44,3 +44,18 @@ USER_ERROR_RESPONSES = {
         }
     }
 }
+
+MEDIA_ERROR_RESPONSES = {
+    403: {
+        "description": "CustomException Error",
+        "content": {
+            "application/json": {
+                "example": {
+                    "result": "false",
+                    "error_type": "media",
+                    "error_message": "Access denied"
+                }
+            }
+        }
+    }
+}
