@@ -101,7 +101,24 @@ async def unlike_tweet(
     return await service.delete_like(user, tweet_id)
 
 
-@tweet_router.get("/", response_model=TweetsList)
+@tweet_router.get(
+    "/",
+    response_model=TweetsList,
+    responses={
+        "403": {
+            "description": "Successful Response",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "result": "false",
+                        "error_type": "Tweets",
+                        "error_message": "Access denied"
+                    }
+                }
+            }
+        }
+    }
+)
 async def get_tweets(
     request: Request,
     service: TweetService = Depends(),
