@@ -16,12 +16,6 @@ class TweetDisplay(BaseModel):
 
     class Config:
         orm_mode = True
-        # schema_extra = {
-        #     "example": {
-        #         "username": "fastapi@packt.com",
-        #         "password": "strong!!!",
-        #     }
-        # }
 
 
 class TweetsList(BaseModel):

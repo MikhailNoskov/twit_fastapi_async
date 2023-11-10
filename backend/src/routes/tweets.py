@@ -8,7 +8,7 @@ from schema.tweets import TweetsList, TweetCreate, TweetResponse
 from schema.positive import PositiveResponse
 from database.tweets import TweetService
 from logging_conf import logs_config
-from utils.response_info import TWEET_ERROR_RESPONSES
+from .response_info import TWEET_ERROR_RESPONSES
 
 tweet_router = APIRouter(tags=["tweets"])
 

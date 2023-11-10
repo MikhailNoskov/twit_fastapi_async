@@ -11,7 +11,7 @@ from database.media import MediaService
 from celery_app import resize_image, reattach_new_path
 from logging_conf import logs_config
 from exceptions.custom_exceptions import CustomException
-from utils.response_info import MEDIA_ERROR_RESPONSES
+from .response_info import MEDIA_ERROR_RESPONSES
 
 
 media_router = APIRouter(tags=["media"])

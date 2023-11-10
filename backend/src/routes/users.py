@@ -10,7 +10,7 @@ from schema.users import UserRegister, UserResponse
 from schema.positive import PositiveResponse, TokenResponse
 from database.users import UserService
 from logging_conf import logs_config
-from utils.response_info import USER_ERROR_RESPONSES
+from .response_info import USER_ERROR_RESPONSES
 
 logging.config.dictConfig(logs_config)
 logger = logging.getLogger("app.user_routes")
