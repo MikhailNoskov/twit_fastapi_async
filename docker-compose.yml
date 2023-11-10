@@ -57,7 +57,7 @@ services:
       options:
         loki-url: http://localhost:3100/loki/api/v1/push
     ports:
-      - "80:80"
+      - "5600:80"
     depends_on:
       - backend
     networks:
@@ -78,6 +78,10 @@ services:
     container_name: worker
     networks:
       - mike
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
 
   grafana:
     image: grafana/grafana:9.2.15

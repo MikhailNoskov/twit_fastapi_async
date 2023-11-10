@@ -13,6 +13,7 @@ from settings import settings
 
 REDIS_HOST = settings.REDIS_HOST
 REDIS_PORT = settings.REDIS_PORT
+AWS_PATH = settings.AWS_PATH
 
 celery_app = Celery(__name__)
 celery_app.conf.broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}"
@@ -25,7 +26,7 @@ logger.setLevel("DEBUG")
 
 
 @celery_app.task
-def resize_image(name, path, file_bytes, size_mb=2) -> None:
+def resize_image(name, file_bytes, size_mb=2) -> None:
     """
     Image file resize async task
     :param name: str
@@ -35,6 +36,7 @@ def resize_image(name, path, file_bytes, size_mb=2) -> None:
     :return: None
     """
     try:
+        path = f"images/{name}"
         if len(file_bytes) > 2 * 1024 * 1024:  # 2Mb
             logger.warning(msg="Big file")
             input_stream = io.BytesIO(file_bytes)
@@ -68,7 +70,8 @@ def resize_image(name, path, file_bytes, size_mb=2) -> None:
 
 
 @celery_app.task
-def reattach_new_path(image_id: int, path: str) -> None:
+def reattach_new_path(image_id: int, filename: str) -> None:
+    path = AWS_PATH + filename
     try:
         async def wrapped():
             await update_media_path(media_id=image_id, new_path=path)

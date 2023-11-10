@@ -11,7 +11,7 @@ from database.media import MediaService
 from celery_app import resize_image, reattach_new_path
 from logging_conf import logs_config
 from exceptions.custom_exceptions import CustomException
-from .response_info import MEDIA_ERROR_RESPONSES
+from utils.response_info import MEDIA_ERROR_RESPONSES
 
 
 media_router = APIRouter(tags=["media"])
@@ -55,15 +55,14 @@ async def post_new_media_file(
             error_message=error_message,
             response_status=status.HTTP_403_FORBIDDEN,
         )
-    logger.debug(msg=f"User {user} tries to load file {file.filename}")
+    filename = file.filename
+    logger.debug(msg=f"User {user} tries to load file {filename}")
     letters = string.ascii_letters
     random_str = "".join(random.choice(letters) for i in range(6))
     new = f"_{random_str}."
-    filename = new.join(file.filename.rsplit(".", 1))
-    path = f"images/{filename}"
+    filename = new.join(filename.rsplit(".", 1))
     file_bytes = await file.read()
     image = await service.file_db_record(path=default_path)
-    resize_image.delay(filename, path, file_bytes)
-    new_path = "https://amigomalay.s3.eu-north-1.amazonaws.com/" + filename
-    reattach_new_path.delay(image.media_id, new_path)
+    resize_image.delay(filename, file_bytes)
+    reattach_new_path.delay(image.media_id, filename)
     return image
