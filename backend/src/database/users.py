@@ -71,7 +71,13 @@ class UserService(AbstractService):
             result = await self.session.execute(req)
             db_user = result.scalar_one_or_none()
             if not db_user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
+                error_message = "User not found"
+                logger.exception(msg=error_message)
+                raise CustomException(
+                    error_type="users",
+                    error_message=error_message,
+                    response_status=status.HTTP_404_NOT_FOUND,
+                )
             if HashPassword().verify_hash(user.password, db_user.password):
                 access_token = create_access_token(db_user.name)
                 return {"access_token": access_token, "token_type": "Bearer"}
