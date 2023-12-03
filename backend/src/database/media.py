@@ -28,13 +28,16 @@ class MediaService(AbstractService):
         :return: MediaResponse with info about image file
         """
         async with self.session.begin():
-            new_media = Media(media_url=path)
-            self.session.add(new_media)
-            await self.session.flush()
-            await self.session.refresh(new_media)
-            image = MediaResponse(media_id=new_media.id)
-            logger.debug(msg=f"Image {path} added")
-            return image
+            try:
+                new_media = Media(media_url=path)
+                self.session.add(new_media)
+                await self.session.flush()
+                await self.session.refresh(new_media)
+                image = MediaResponse(media_id=new_media.id)
+                logger.debug(msg=f"Image {path} added")
+                return image
+            except Exception as err:
+                logger.warning(msg=f'Error occurred while saving media record {err}')
 
 
 async def update_media_path(media_id: int, new_path: str) -> None:
@@ -46,17 +49,20 @@ async def update_media_path(media_id: int, new_path: str) -> None:
     """
     async with async_session_maker() as db:
         async with db.begin():
-            media = await db.execute(select(Media).where(Media.id == media_id))
-            media = media.scalars().first()
-            if not media:
-                error_message = "Media not found"
-                logger.warning(msg=error_message)
-                raise CustomException(
-                    error_type="media",
-                    error_message=error_message,
-                    response_status=status.HTTP_404_NOT_FOUND,
-                )
-            media.media_url = new_path
-            await db.merge(media)
-            await db.commit()
-            logger.info(msg="New path is saved")
+            try:
+                media = await db.execute(select(Media).where(Media.id == media_id))
+                media = media.scalars().first()
+                if not media:
+                    error_message = "Media not found"
+                    logger.warning(msg=error_message)
+                    raise CustomException(
+                        error_type="media",
+                        error_message=error_message,
+                        response_status=status.HTTP_404_NOT_FOUND,
+                    )
+                media.media_url = new_path
+                await db.merge(media)
+                await db.commit()
+                logger.info(msg="New path is saved")
+            except Exception as err:
+                logger.warning(msg=f'Error occurred while reattaching media to tweet {err}')

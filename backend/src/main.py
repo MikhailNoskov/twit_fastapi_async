@@ -23,13 +23,13 @@ from settings import settings
 
 
 sentry_sdk.init(
-    dsn="https://c699f8e763ecd3e18f34cd56ed3b435c@o1075355.ingest.sentry.io/4505930641309696",
+    dsn=settings.SENTRY_DSN,
     traces_sample_rate=1.0,
     profiles_sample_rate=1.0,
 )
 
 API_KEY = APIKeyHeader(name="api-key", auto_error=False)
-app = FastAPI()
+app = FastAPI(title='SkillTweet', description='Tweeterlike app')
 
 app.include_router(user_router, prefix="/api/users")
 app.include_router(tweet_router, prefix="/api/tweets")

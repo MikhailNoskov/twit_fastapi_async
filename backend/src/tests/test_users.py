@@ -1,7 +1,4 @@
 import pytest
-from urllib.parse import urlencode
-
-from fastapi.security import OAuth2PasswordRequestForm
 
 from httpx import AsyncClient
 from main import app
