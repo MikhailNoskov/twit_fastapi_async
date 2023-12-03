@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     AWS_PATH: Optional[str] = None
+    AWS_BUCKET: Optional[str] = None
     DB_USER: Optional[str] = None
     DB_PASSWORD: Optional[str] = None
     DB_HOST: Optional[str] = None

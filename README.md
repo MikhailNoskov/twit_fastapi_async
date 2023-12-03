@@ -1,4 +1,4 @@
-# Python advanced diploma project (SkillBox)
+# Example for FASTApi backend with async db connection for Twitterlike fornt-end
 
 ## Project structure
 * **frontend** - Client part with nginx config
