@@ -14,6 +14,7 @@ from settings import settings
 REDIS_HOST = settings.REDIS_HOST
 REDIS_PORT = settings.REDIS_PORT
 AWS_PATH = settings.AWS_PATH
+AWS_BUCKET = settings.AWS_BUCKET
 
 celery_app = Celery(__name__)
 celery_app.conf.broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}"
@@ -61,7 +62,7 @@ def resize_image(name, file_bytes, size_mb=2) -> None:
             resized_bytes = file_bytes
         with open(path, "wb") as f:
             f.write(resized_bytes)
-        s3.upload_file(path, "amigomalay", name)
+        s3.upload_file(path, AWS_BUCKET, name)
         logger.info(msg="File saved")
         os.remove(path)
         logger.info(msg="Temporary file removed")
